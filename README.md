@@ -1,3 +1,3 @@
-## NC Resource Finder
+# North Carolina Resource Finder
 
-Front-end build for NC Resource Finder. To be migrated to Drupal.
+Front-end demo of NC Resource Finder. This project will be integrated with NCDIT's Drupal environment.
