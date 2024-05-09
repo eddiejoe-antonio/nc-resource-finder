@@ -1,66 +1,62 @@
-// src/components/AssetListItem.tsx
 import React, { useState } from 'react';
-import { ArrowUpIcon, ArrowRightIcon, MapIcon, LinkIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, BookmarkIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { classNames } from '../utils/helper';
 import { AssetListItemProps, ViewType } from '../types/ResourceFinder';
 
-const AssetListItem: React.FC<AssetListItemProps> = ({ asset, viewType }) => {
+const AssetListItem: React.FC<AssetListItemProps> = ({ resource, viewType }) => {
   const [showMore, setShowMore] = useState(false);
 
   return (
     <div
       className={classNames(
-        'flex flex-col justify-between border bg-white drop-shadow-md border-gray-300 rounded-md p-6 overflow-hidden',
-        viewType === ViewType.GRID ? 'min-h-72' : 'flex-row items-center',
+        'flex flex-col font-inter border bg-white drop-shadow-md border-primary-800 overflow-hidden transition-all ease-in-out duration-300',
+        viewType === ViewType.GRID ? 'self-center' : '',
       )}
     >
-      <div className='flex flex-col w-full'>
-        <div className='flex justify-between items-center'>
-          <h3 className='font-semibold text-lg'>{asset.fields.Asset}</h3>
-          <button
-            onClick={() => setShowMore(!showMore)}
-            className='text-blue-600 hover:text-blue-800 transition-colors duration-300 text-sm flex items-center'
-          >
-            {showMore ? 'Less Details' : 'More Details'}{' '}
-            {showMore ? <ArrowUpIcon /> : <ArrowRightIcon />}
-          </button>
+      <div className='bg-[#EEF7FF] p-4'>
+        <h3 className='text-lg font-semibold'>{resource.Name}</h3>
+      </div>
+      <div className='px-4 pt-6'>
+        <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
+          <MapPinIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
+          {resource.Geography}
         </div>
-        <div className='text-gray-600 text-sm mb-2'>
-          {asset.fields['Organization Sub-Type'].join(', ')}
+      </div>
+      <div className='px-4'>
+        <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
+          <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
+          {resource.Type}
         </div>
-        <div className='flex items-center text-gray-600'>
-          <MapIcon />
-          <span className='ml-2'>{asset.fields['County (from Org County)'].join(', ')} County</span>
-        </div>
-        {asset.fields.Website && (
+      </div>
+      <div className='px-4 pb-6'>
+        <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
+          <LinkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
           <a
-            href={asset.fields.Website}
+            href={resource.Website}
             target='_blank'
             rel='noopener noreferrer'
-            className='text-blue-600 hover:text-blue-800 transition-colors duration-300 text-sm mt-2'
+            className='hover:text-blue-700'
           >
-            <LinkIcon /> Visit Website
+            {resource.Website}
           </a>
+        </div>
+      </div>
+      <div className='px-4 pb-4'>
+        <button
+          onClick={() => setShowMore(!showMore)}
+          className='bg-blue-500 hover:bg-blue-600 text-white text-sm px-8 py-2 rounded-full focus:outline-none focus:shadow-outline transition-colors duration-300 flex items-center justify-center gap-2'
+        >
+          {showMore ? <>Collapse</> : <>Learn More</>}
+        </button>
+        {showMore && (
+          <div className='text-sm text-[#0E3052] mt-4'>
+            <h3 className='my-2 font-semibold'>Description</h3>
+            <p>{resource.Servicesprovided}</p>
+            <h3 className='my-2 font-semibold'>Organization Type</h3>
+            <p>{resource.OrganizationTypeBroadsector}</p>
+          </div>
         )}
       </div>
-      {showMore && (
-        <div className='mt-4'>
-          <div className='text-sm'>
-            <strong>Description:</strong> {asset.fields['Asset Description']}
-          </div>
-          {asset.fields['Asset Broadband Focus Area'] && (
-            <div className='mt-2'>
-              <strong>Focus Areas:</strong> {asset.fields['Asset Broadband Focus Area'].join(', ')}
-            </div>
-          )}
-          {asset.fields['Asset Covered Population'] && (
-            <div className='mt-2'>
-              <strong>Population Served:</strong>{' '}
-              {asset.fields['Asset Covered Population'].join(', ')}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };

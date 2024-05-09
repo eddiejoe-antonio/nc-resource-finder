@@ -1,43 +1,40 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import AssetListItem from './AssetListItem';
-import { AssetListItemProps, ViewType } from '../types/ResourceFinder';
+import { ViewType } from '../types/ResourceFinder';
 
-import assets from '../static/assets.json'; // Import local JSON
+import resources from '../static/resources.json'; // Ensure this points to your resources JSON file
 
 export default function ResourceFinder() {
   const [viewType, setViewType] = useState(ViewType.GRID);
   const [selectedFilters, setSelectedFilters] = useState({});
-  const [activeCounties, setActiveCounties] = useState([]);
+  const [activeGeographies, setActiveGeographies] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredAssets = useMemo(() => {
-    return assets.filter((asset) => {
-      const includesCounty =
-        activeCounties.length === 0 ||
-        activeCounties.some((ac) => asset.fields['County (from Org County)'].includes(ac));
-      const isActive = !asset.fields.Hide;
-      return includesCounty && isActive;
+  const filteredResources = useMemo(() => {
+    return resources.filter((resource) => {
+      console.log(resource.Geography);
+
+      const includesGeography =
+        activeGeographies.length === 0 ||
+        activeGeographies.some((ag) => resource.Geography.includes(ag));
+      return includesGeography;
     });
-  }, [activeCounties]);
+  }, [activeGeographies]);
 
   const LIMIT = viewType === ViewType.LIST ? 20 : 21;
-  const paginatedAssets = useMemo(() => {
+  const paginatedResources = useMemo(() => {
     const startIndex = (currentPage - 1) * LIMIT;
-    return filteredAssets.slice(startIndex, startIndex + LIMIT);
-  }, [currentPage, filteredAssets, LIMIT]);
+    return filteredResources.slice(startIndex, startIndex + LIMIT);
+  }, [currentPage, filteredResources, LIMIT]);
 
   return (
-    <div className='w-full h-full max-w-screen-xl m-auto px-8 py-4'>
-      <div className='flex w-full justify-between'>
-        <div className='flex w-1/2 gap-2 items-center justify-end'>{/* Icon buttons here */}</div>
-      </div>
-      {/* Additional UI components like filters, pagination here */}
+    <div className='w-full h-full md:px-28 py-4'>
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-4'>
-        {paginatedAssets.map((asset, i) => (
-          <AssetListItem key={i} asset={asset} viewType={viewType} />
+        {paginatedResources.map((resource, i) => (
+          <AssetListItem key={i} resource={resource} viewType={viewType} />
         ))}
       </div>
-      {/* Pagination component here */}
+      {/* Pagination and other UI components */}
     </div>
   );
 }
