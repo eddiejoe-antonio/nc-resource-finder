@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { QuestionMarkCircleIcon, MapPinIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+// import Tooltip from './Tooltip';
 
 const Header = () => {
   const iconSize = '2em';
@@ -45,6 +46,7 @@ const Header = () => {
         </div>
         {/* Toggle Buttons */}
         <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
+          {/* <Tooltip message='Show me the data on an interactive map!'> */}
           <button
             className={`flex-grow flex items-center justify-center gap-2 py-1 md:h-14 rounded-l-lg ${
               selectedView === 'map'
@@ -56,6 +58,7 @@ const Header = () => {
             <MapPinIcon className='h-5 w-5 md:h-8 md:w-8' />
             Map
           </button>
+          {/* </Tooltip> */}
           <button
             className={`flex-grow flex items-center justify-center gap-2 py-1 md:h-14 rounded-r-lg ${
               selectedView === 'list'

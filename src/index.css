@@ -16,9 +16,8 @@ body {
 }
 
 .tooltip-content {
-  top: -100%; /* Position below the icon */
-  left: 50%; /* Center the tooltip */
-  transform: translateX(-50%); /* Ensure it's centered */
+  top: -50%; /* Position below the icon */
+  left: 0%; /* Center the tooltip */ /* Ensure it's centered */
   white-space: nowrap; /* Prevent text wrapping */
 }
 
