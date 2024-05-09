@@ -4,13 +4,13 @@ import { QuestionMarkCircleIcon, MapPinIcon, ListBulletIcon } from '@heroicons/r
 const Header = () => {
   const iconSize = '2em';
   const [hover, setHover] = useState(false);
-  const [selectedView, setSelectedView] = useState('list'); // default to map
+  const [selectedView, setSelectedView] = useState('list'); // default to 'list'
 
   return (
     <div className='w-full bg-white'>
       <div className='block md:grid md:grid-cols-12'>
         {/* Title */}
-        <div className='mt-20 md:mb-12 col-start-2 col-span-8'>
+        <div className='mt-20 md:mb-12 col-start-2 col-span-8 text-left'>
           <span className="text-[#3B75A9] text-[1.25rem] md:text-[2rem] font-regular font-['Source Sans Pro'] uppercase">
             North Carolina{` `}
           </span>
@@ -20,7 +20,7 @@ const Header = () => {
         </div>
         {/* Question Mark Icon with Tooltip */}
         <div
-          className='md:mt-20 md:mb-12 mb-4 flex items-center col-start-11 col-span-1 relative'
+          className='mb-4 flex justify-start items-center col-start-11 col-span-1 relative'
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
         >
@@ -36,7 +36,7 @@ const Header = () => {
 
       {/* Intro Text and Buttons */}
       <div className='grid grid-cols-12'>
-        <div className='col-start-1 col-span-12 md:col-start-2 md:col-span-7'>
+        <div className='col-start-1 col-span-12 md:col-start-2 md:col-span-7 mb-4'>
           <p className=''>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent aliquam sagittis
             augue, vitae convallis massa venenatis vel. Integer elementum id ligula vitae congue.
@@ -44,32 +44,33 @@ const Header = () => {
           </p>
         </div>
         {/* Toggle Buttons */}
-        <div className='col-start-10 col-span-3 md:col-start-10 md:col-span-1 flex items-center'>
+        <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
           <button
-            className={`flex py-2 px-10 rounded ${
+            className={`flex-grow flex items-center justify-center gap-2 py-1 md:h-14 rounded-l-lg ${
               selectedView === 'map'
                 ? 'bg-[#BC2442] hover:bg-[#CF1F42] text-white'
                 : 'bg-[#1E79C8] hover:bg-[#3892E1] text-white'
             }`}
             onClick={() => setSelectedView('map')}
           >
-            <MapPinIcon className='h-5 w-5' />
+            <MapPinIcon className='h-5 w-5 md:h-8 md:w-8' />
             Map
           </button>
-        </div>
-        <div className='col-start-10 col-span-3 md:col-start-11 md:col-span-1 flex items-center justify-start'>
           <button
-            className={`flex items-center py-2 px-10 rounded ${
+            className={`flex-grow flex items-center justify-center gap-2 py-1 md:h-14 rounded-r-lg ${
               selectedView === 'list'
                 ? 'bg-[#BC2442] hover:bg-[#CF1F42] text-white'
                 : 'bg-[#1E79C8] hover:bg-[#3892E1] text-white'
             }`}
             onClick={() => setSelectedView('list')}
           >
-            <ListBulletIcon className='h-5 w-5' />
+            <ListBulletIcon className='h-5 w-5 md:h-10 md:w-10' />
             List
           </button>
         </div>
+      </div>
+      <div className='grid grid-cols-12'>
+        <hr className='col-start-2 col-span-10'></hr>
       </div>
     </div>
   );
