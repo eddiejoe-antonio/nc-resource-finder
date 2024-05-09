@@ -1,7 +1,9 @@
 const Toggle = () => {
-    return ( <div>
-        <p>TEST</p>
-    </div> );
-}
- 
+  return (
+    <div>
+      <p>TEST</p>
+    </div>
+  );
+};
+
 export default Toggle;

@@ -1,15 +1,17 @@
 // App.js
-import Cards from './components/Cards';
-import MapInterface from './components/MapInterface';
-import Toggle from './components/Toggle';
+// import Cards from './components/Cards';
+import Header from './components/Header';
+// import MapInterface from './components/MapInterface';
+// import Toggle from './components/Toggle';
 
 function App() {
   return (
-      <div className="container mx-auto p-4">
-        <Toggle />
-            <Cards />
-            <MapInterface />
-      </div>
+    <div className='mx-4 md:mx-0'>
+      <Header />
+      {/* <Toggle />
+      <Cards />
+      <MapInterface /> */}
+    </div>
   );
 }
 
