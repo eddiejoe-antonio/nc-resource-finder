@@ -11,6 +11,62 @@ export interface FilterOption {
   checked: boolean;
   type: string;
 }
+// Example data for the 'Geography' filter
+export const typeFilterData: FilterData = {
+  id: 'type',
+  name: 'Type',
+  explanation: 'Select one or more counties to see resources available in those areas.',
+  options: [
+    {
+      value: 'Digitial Skills (Classes and Training)',
+      label: 'Digitial Skills (Classes and Training)',
+      checked: false,
+      type: 'Type',
+    },
+    {
+      value: 'Device Access',
+      label: 'Device Access',
+      checked: false,
+      type: 'Type',
+    },
+    {
+      value: 'Digital Skills',
+      label: 'Digital Skills',
+      checked: false,
+      type: 'Type',
+    },
+    {
+      value: 'Public Device & Internet Access',
+      label: 'Public Device & Internet Access',
+      checked: false,
+      type: 'Type',
+    },
+    {
+      value: 'Virtual Support',
+      label: 'Virtual Support',
+      checked: false,
+      type: 'Type',
+    },
+    {
+      value: 'Digital Skills & Technical Support',
+      label: 'Digital Skills & Technical Support',
+      checked: false,
+      type: 'Type',
+    },
+    {
+      value: 'Digital Inclusion Funding',
+      label: 'Digital Inclusion Funding',
+      checked: false,
+      type: 'Type',
+    },
+    {
+      value: 'Digital Navigation',
+      label: 'Digital Navigation',
+      checked: false,
+      type: 'Type',
+    },
+  ],
+};
 
 // Example data for the 'Geography' filter
 export const geographyFilterData: FilterData = {

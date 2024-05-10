@@ -72,9 +72,6 @@ const Header = () => {
           </button>
         </div>
       </div>
-      <div className='grid grid-cols-12'>
-        <hr className='col-start-2 col-span-10'></hr>
-      </div>
     </div>
   );
 };
