@@ -5,10 +5,10 @@ import { ViewType } from '../types/ResourceFinder';
 import resources from '../static/resources.json'; // Ensure this points to your resources JSON file
 
 export default function ResourceFinder() {
-  const [viewType, setViewType] = useState(ViewType.GRID);
-  const [selectedFilters, setSelectedFilters] = useState({});
-  const [activeGeographies, setActiveGeographies] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [viewType] = useState(ViewType.GRID);
+  // const [selectedFilters] = useState({});
+  const [activeGeographies] = useState([]);
+  const [currentPage] = useState(1);
 
   const filteredResources = useMemo(() => {
     return resources.filter((resource) => {

@@ -4,18 +4,14 @@ export enum ViewType {
   GRID = 1,
   LIST = 2,
 }
-
-export interface ResourceFields {
-  Name: string;
-  Geography: string[];
-  Website: string[];
-  Servicesprovided: string;
-  OrganizationTypeBroadsector: string;
-  // Add other fields as necessary based on your JSON structure
-}
-
+// In your types/ResourceFinder.ts file, or wherever you define your types
 export interface Resource {
-  fields: ResourceFields;
+  Name: string;
+  Geography: string;
+  Type: string;
+  Website: string;
+  Servicesprovided: string; // Define this property if it's missing
+  OrganizationTypeBroadsector: string; // Define this property if it's missing
 }
 
 export interface AssetListItemProps {
