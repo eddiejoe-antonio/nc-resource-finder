@@ -1,3 +1,14 @@
+import {
+  CheckIcon,
+  WifiIcon,
+  UserGroupIcon,
+  BookOpenIcon,
+  DeviceTabletIcon,
+  AdjustmentsVerticalIcon,
+  BanknotesIcon,
+  ChatBubbleOvalLeftIcon,
+} from '@heroicons/react/24/outline';
+
 export interface FilterData {
   id: string;
   name: string;
@@ -10,6 +21,7 @@ export interface FilterOption {
   label: string;
   checked: boolean;
   type: string;
+  icon?: React.ElementType; // Add icon field to the FilterOption interface
 }
 // Example data for the 'Geography' filter
 export const typeFilterData: FilterData = {
@@ -22,48 +34,56 @@ export const typeFilterData: FilterData = {
       label: 'Digitial Skills (Classes and Training)',
       checked: false,
       type: 'Type',
+      icon: BookOpenIcon,
     },
     {
       value: 'Device Access',
       label: 'Device Access',
       checked: false,
       type: 'Type',
+      icon: DeviceTabletIcon,
     },
     {
       value: 'Digital Skills',
       label: 'Digital Skills',
       checked: false,
       type: 'Type',
+      icon: CheckIcon,
     },
     {
       value: 'Public Device & Internet Access',
       label: 'Public Device & Internet Access',
       checked: false,
       type: 'Type',
+      icon: WifiIcon,
     },
     {
       value: 'Virtual Support',
       label: 'Virtual Support',
       checked: false,
       type: 'Type',
+      icon: ChatBubbleOvalLeftIcon,
     },
     {
       value: 'Digital Skills & Technical Support',
       label: 'Digital Skills & Technical Support',
       checked: false,
       type: 'Type',
+      icon: UserGroupIcon,
     },
     {
       value: 'Digital Inclusion Funding',
       label: 'Digital Inclusion Funding',
       checked: false,
       type: 'Type',
+      icon: BanknotesIcon,
     },
     {
       value: 'Digital Navigation',
       label: 'Digital Navigation',
       checked: false,
       type: 'Type',
+      icon: AdjustmentsVerticalIcon,
     },
   ],
 };
