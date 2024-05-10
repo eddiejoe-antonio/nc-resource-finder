@@ -7,14 +7,13 @@ export enum ViewType {
 // In your types/ResourceFinder.ts file, or wherever you define your types
 export interface Resource {
   Name: string;
-  Geography: string;
-  Type: string;
-  Website: string;
-  Servicesprovided: string; // Define this property if it's missing
-  OrganizationTypeBroadsector: string; // Define this property if it's missing
+  Geography?: string;
+  Type: string[]; // Now Type can be either a string or an array of strings
+  Website?: string;
+  Servicesprovided?: string; // Define this property if it's missing
+  OrganizationTypeBroadsector?: string; // Define this property if it's missing
 }
 
 export interface AssetListItemProps {
   resource: Resource;
-  viewType: ViewType;
 }

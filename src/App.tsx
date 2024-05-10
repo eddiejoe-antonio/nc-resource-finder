@@ -1,5 +1,6 @@
 // App.js
 // import Cards from './components/Cards';
+import { MantineProvider } from '@mantine/core';
 import Header from './components/Header';
 import ResourceFinder from './components/ResourceFinder';
 // import MapInterface from './components/MapInterface';
@@ -7,8 +8,10 @@ import ResourceFinder from './components/ResourceFinder';
 function App() {
   return (
     <div className='mx-4 md:mx-0'>
-      <Header />
-      <ResourceFinder />
+      <MantineProvider>
+        <Header />
+        <ResourceFinder />
+      </MantineProvider>
     </div>
   );
 }

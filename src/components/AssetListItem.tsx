@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
 import { MapPinIcon, BookmarkIcon, LinkIcon } from '@heroicons/react/24/outline';
-import { classNames } from '../utils/helper';
-import { AssetListItemProps, ViewType } from '../types/ResourceFinder';
+import { AssetListItemProps } from '../types/ResourceFinder';
 
-const AssetListItem: React.FC<AssetListItemProps> = ({ resource, viewType }) => {
+const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   const [showMore, setShowMore] = useState(false);
 
+  const formatType = (type: string | string[]) => {
+    if (Array.isArray(type)) {
+      return type.join(', ');
+    } else {
+      return type;
+    }
+  };
+
+  // In your component:
+  <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
+    <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
+    {formatType(resource.Type)}
+  </div>;
+
   return (
-    <div
-      className={classNames(
-        'flex flex-col font-inter border bg-white drop-shadow-md border-primary-800 overflow-hidden transition-all ease-in-out duration-300',
-        viewType === ViewType.GRID ? 'self-center' : '',
-      )}
-    >
+    <div className='flex flex-col font-inter border bg-white drop-shadow-md border-primary-800 overflow-hidden transition-all ease-in-out duration-300'>
       <div className='bg-[#EEF7FF] p-4'>
         <h3 className='text-md font-semibold'>{resource.Name}</h3>
       </div>
@@ -25,7 +33,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource, viewType }) => 
       <div className='px-4'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
           <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          {resource.Type}
+          {formatType(resource.Type)}
         </div>
       </div>
       <div className='px-4 pb-6'>
