@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { MapPinIcon, BookmarkIcon, LinkIcon } from '@heroicons/react/24/outline';
-import { classNames } from '../utils/helper';
-import { AssetListItemProps, ViewType } from '../types/ResourceFinder';
+import { AssetListItemProps } from '../types/ResourceFinder';
 
-const AssetListItem: React.FC<AssetListItemProps> = ({ resource, viewType }) => {
+const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   const [showMore, setShowMore] = useState(false);
 
   const formatType = (type: string | string[]) => {
@@ -21,12 +20,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource, viewType }) => 
   </div>;
 
   return (
-    <div
-      className={classNames(
-        'flex flex-col font-inter border bg-white drop-shadow-md border-primary-800 overflow-hidden transition-all ease-in-out duration-300',
-        viewType === ViewType.GRID ? 'self-center' : '',
-      )}
-    >
+    <div className='flex flex-col font-inter border bg-white drop-shadow-md border-primary-800 overflow-hidden transition-all ease-in-out duration-300'>
       <div className='bg-[#EEF7FF] p-4'>
         <h3 className='text-md font-semibold'>{resource.Name}</h3>
       </div>

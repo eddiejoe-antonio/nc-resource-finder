@@ -8,7 +8,7 @@ export enum ViewType {
 export interface Resource {
   Name: string;
   Geography?: string;
-  Type: string | string[]; // Now Type can be either a string or an array of strings
+  Type: string[]; // Now Type can be either a string or an array of strings
   Website?: string;
   Servicesprovided?: string; // Define this property if it's missing
   OrganizationTypeBroadsector?: string; // Define this property if it's missing
@@ -16,5 +16,4 @@ export interface Resource {
 
 export interface AssetListItemProps {
   resource: Resource;
-  viewType: ViewType;
 }

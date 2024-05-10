@@ -11,9 +11,12 @@ export default function ResourceFinder() {
   );
 
   // Filter resources based on selected county or show all if selectedCounty is null
-  const filteredResources = resources.filter(
-    (resource) => !selectedCounty || resource.Geography === (selectedCounty?.value || ''),
-  );
+  const filteredResources = resources
+    .map((resource) => ({
+      ...resource,
+      Type: resource.Type || [], // Provide an empty array if Type is undefined
+    }))
+    .filter((resource) => !selectedCounty || resource.Geography === (selectedCounty?.value || ''));
 
   const handleCountySelection = (option: { value: string; label: string }) => {
     // Toggle selection by checking if the clicked county is the currently selected one
