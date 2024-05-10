@@ -10,6 +10,9 @@ export default function ResourceFinder() {
     null,
   );
   const [selectedType, setSelectedType] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 18; // Change as needed
 
   const filteredResources = resources
     .map((resource) => ({
@@ -22,6 +25,11 @@ export default function ResourceFinder() {
         selectedType.length === 0 || selectedType.some((type) => resource.Type.includes(type));
       return countyMatch && typeMatch;
     });
+
+  const paginatedResources = filteredResources.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   const handleCountySelection = (option: { value: string; label: string }) => {
     setSelectedCounty(selectedCounty === option ? null : option);
@@ -68,7 +76,7 @@ export default function ResourceFinder() {
                             <span
                               className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}
                             >
-                              {option.label}
+                              {option.label} County
                             </span>
                             {selected ? (
                               <span className='absolute inset-y-0 left-0 flex items-center pl-3'>
@@ -103,10 +111,29 @@ export default function ResourceFinder() {
       </div>
       <hr className='border-t-1 border-black' />
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-8'>
-        {filteredResources.map((resource, index) => (
+        {paginatedResources.map((resource, index) => (
           <AssetListItem key={index} resource={resource} />
         ))}
       </div>
+      {/* Pagination component */}
+      <div className='flex justify-center items-center my-4'>
+        <button
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
+        >
+          Previous
+        </button>
+        <span>{currentPage}</span>
+        <button
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={currentPage === Math.ceil(filteredResources.length / ITEMS_PER_PAGE)}
+          className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
+        >
+          Next
+        </button>
+      </div>
+      <div className='my-20 bg-black'></div>
     </div>
   );
 }
