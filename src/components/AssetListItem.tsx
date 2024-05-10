@@ -14,7 +14,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource, viewType }) => 
       )}
     >
       <div className='bg-[#EEF7FF] p-4'>
-        <h3 className='text-lg font-semibold'>{resource.Name}</h3>
+        <h3 className='text-md font-semibold'>{resource.Name}</h3>
       </div>
       <div className='px-4 pt-6'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
@@ -35,7 +35,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource, viewType }) => 
             href={resource.Website}
             target='_blank'
             rel='noopener noreferrer'
-            className='hover:text-blue-700'
+            className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
           >
             {resource.Website}
           </a>
@@ -44,7 +44,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource, viewType }) => 
       <div className='px-4 pb-4'>
         <button
           onClick={() => setShowMore(!showMore)}
-          className='bg-blue-500 hover:bg-blue-600 text-white text-sm px-8 py-2 rounded-full focus:outline-none focus:shadow-outline transition-colors duration-300 flex items-center justify-center gap-2'
+          className='bg-[#1E79C8] hover:bg-[#3892E1] text-white text-sm px-12 py-2 rounded-full focus:outline-none focus:shadow-outline transition-colors duration-300 flex items-center justify-center gap-2 shadow'
         >
           {showMore ? <>Collapse</> : <>Learn More</>}
         </button>
