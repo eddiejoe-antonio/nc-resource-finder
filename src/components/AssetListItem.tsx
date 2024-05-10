@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MapPinIcon, BookmarkIcon, LinkIcon } from '@heroicons/react/24/outline';
-import { AssetListItemProps } from '../types/ResourceFinder';
+import { AssetListItemProps } from '../types/resourceFinderTypes';
 
 const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   const [showMore, setShowMore] = useState(false);

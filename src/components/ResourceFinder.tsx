@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Listbox } from '@headlessui/react';
 import { CheckIcon, MapIcon } from '@heroicons/react/24/outline';
 import AssetListItem from './AssetListItem';
-import { geographyFilterData, typeFilterData } from '../static/filterResourceFinder';
+import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
 import resources from '../static/resources.json';
 
 export default function ResourceFinder() {
@@ -47,16 +47,16 @@ export default function ResourceFinder() {
     <div className='w-full md:px-28 py-4'>
       <hr className='border-t-1 border-black' />
       <div className='flex flex-col md:flex-row md:items-start py-4 bg-[#EEF7FF]'>
-        <div className='md:w-80 md:pl-2 w-full'>
+        <div className='md:w-80 px-1 md:pl-2 w-full'>
           <Listbox value={selectedCounty} onChange={handleCountySelection}>
             {() => (
               <>
                 <div className='mt-1 relative'>
                   <Listbox.Button className='relative w-full bg-white border border-gray-300 rounded-full shadow-md pl-3 pr-10 py-2 text-left cursor-default'>
                     <span className='absolute inset-y-0 left-2 flex items-center pr-2 pointer-events-none'>
-                      <MapIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
+                      <MapIcon className='h-6 w-6 mr-2' aria-hidden='true' />
                     </span>
-                    <span className='ml-6 block truncate'>
+                    <span className='ml-8 block truncate'>
                       {selectedCounty ? selectedCounty.label : 'I am looking in...'}
                     </span>
                   </Listbox.Button>
@@ -93,17 +93,18 @@ export default function ResourceFinder() {
             )}
           </Listbox>
         </div>
-        <div className='flex flex-grow overflow-x-auto mt-4 md:mt-1 md:ml-4 md:mr-2 space-x-4'>
-          {typeFilterData.options.map((option) => (
+        <div className='flex flex-grow overflow-x-auto mt-4 md:mt-1 md:ml-2 md:mr-2 space-x-4'>
+          {typeFilterData.options.map((option: FilterOption) => (
             <button
               key={option.value}
               onClick={() => toggleTypeSelection(option.value)}
-              className={`text-white px-6 py-2 rounded-full shadow-lg transition-colors whitespace-nowrap ${
+              className={`flex items-center px-6 py-2 ml-1 md:ml-4 rounded-full shadow-lg transition-colors whitespace-nowrap ${
                 selectedType.includes(option.value)
-                  ? 'bg-[#092940]' // Selected state color
-                  : 'bg-[#1E79C8] md:hover:bg-[#3892E1]' // Default state with hover effect
-              }`}
+                  ? 'bg-[#092940] text-white' // Apply darker background color if option is selected
+                  : 'bg-[#1E79C8] text-white md:hover:bg-[#3892E1]' // Default background color
+              } `}
             >
+              {option.icon && <option.icon className='w-6 h-6 mr-2' />}
               {option.label}
             </button>
           ))}
