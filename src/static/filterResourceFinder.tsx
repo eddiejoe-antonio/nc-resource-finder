@@ -30,11 +30,11 @@ export const typeFilterData: FilterData = {
   explanation: 'Select one or more counties to see resources available in those areas.',
   options: [
     {
-      value: 'Digitial Skills (Classes and Training)',
-      label: 'Digitial Skills (Classes and Training)',
+      value: 'Digital Navigation',
+      label: 'Digital Navigation',
       checked: false,
       type: 'Type',
-      icon: BookOpenIcon,
+      icon: AdjustmentsVerticalIcon,
     },
     {
       value: 'Device Access',
@@ -79,11 +79,11 @@ export const typeFilterData: FilterData = {
       icon: BanknotesIcon,
     },
     {
-      value: 'Digital Navigation',
-      label: 'Digital Navigation',
+      value: 'Digitial Skills (Classes and Training)',
+      label: 'Digitial Skills (Classes and Training)',
       checked: false,
       type: 'Type',
-      icon: AdjustmentsVerticalIcon,
+      icon: BookOpenIcon,
     },
   ],
 };
