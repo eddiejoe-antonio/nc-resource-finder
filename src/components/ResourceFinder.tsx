@@ -10,41 +10,85 @@ import mapboxgl from 'mapbox-gl';
 mapboxgl.accessToken =
   'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
 
+interface County {
+  value: string;
+  label: string;
+}
+
 interface ResourceFinderProps {
   selectedView: string;
 }
 
 const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
-  const [selectedCounty, setSelectedCounty] = useState<{ value: string; label: string } | null>(
-    null,
-  );
+  const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [selectedType, setSelectedType] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<mapboxgl.Map | null>(null);
 
   useEffect(() => {
-    if (selectedView === 'map') {
-      if (!mapInstance.current && mapContainer.current) {
-        mapInstance.current = new mapboxgl.Map({
+    const map = mapContainer.current
+      ? new mapboxgl.Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/light-v11',
           center: [-79.0193, 35.7596],
           zoom: 6,
-        });
-        mapInstance.current.addControl(new mapboxgl.NavigationControl());
-      }
-    } else {
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
-      }
-    }
-  }, [selectedView]);
+          maxBounds: [
+            [-85, 34],
+            [-72, 37],
+          ], // Set the map's geographical boundaries.
+        })
+      : null;
 
-  const handleCountySelection = (option: { value: string; label: string }) => {
-    setSelectedCounty(selectedCounty === option ? null : option);
+    if (map) {
+      map.on('load', () => {
+        map.addSource('counties', {
+          type: 'vector',
+          url: 'mapbox://eddiejoeantonio.5kdb3ae2',
+        });
+        map.addLayer({
+          id: 'counties-layer',
+          type: 'fill',
+          source: 'counties',
+          'source-layer': 'ncgeo',
+          paint: {
+            'fill-color': '#999B9D', // Default color
+            'fill-outline-color': 'white',
+          },
+        });
+
+        map.on('click', 'counties-layer', (e) => {
+          if (e.features && e.features.length > 0 && e.features[0].properties) {
+            const feature = e.features[0];
+            if (feature.properties) {
+              const countyName = feature.properties['County'];
+              if (countyName) {
+                // Additional check if County is not undefined
+                const county = { value: countyName, label: countyName };
+                if (selectedCounty && selectedCounty.value === county.value) {
+                  setSelectedCounty(null);
+                } else {
+                  setSelectedCounty(county);
+                  const coordinates =
+                    feature.geometry.type === 'Polygon' ? feature.geometry.coordinates[0] : [];
+                  const bounds = new mapboxgl.LngLatBounds();
+                  coordinates.forEach((coord) => {
+                    bounds.extend(coord as mapboxgl.LngLatLike);
+                  });
+                  map.fitBounds(bounds, { padding: 20 });
+                }
+              }
+            }
+          }
+        });
+      });
+    }
+
+    return () => map?.remove(); // Cleanup map on component unmount
+  }, [selectedView]); // Reinitialize the map only if selectedView changes
+
+  const handleCountySelection = (option: County) => {
+    setSelectedCounty(selectedCounty && selectedCounty.value === option.value ? null : option);
   };
 
   const toggleTypeSelection = (type: string) => {
@@ -148,7 +192,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
           ))}
         </div>
       ) : (
-        <div ref={mapContainer} className='map-container' style={{ height: '400px' }} />
+        <div>
+          <div ref={mapContainer} className='map-container' style={{ height: '400px' }} />
+          {/* Show resources below the map based on the selected county */}
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-8'>
+            {paginatedResources.map((resource, index) => (
+              <AssetListItem key={index} resource={resource} />
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Pagination component */}
