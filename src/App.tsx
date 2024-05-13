@@ -1,17 +1,14 @@
-// App.js
-// import Cards from './components/Cards';
-import { MantineProvider } from '@mantine/core';
+import { useState } from 'react';
 import Header from './components/Header';
 import ResourceFinder from './components/ResourceFinder';
-// import MapInterface from './components/MapInterface';
 
 function App() {
+  const [selectedView, setSelectedView] = useState('list'); // Maintain view state at App level
+
   return (
     <div className='mx-4 md:mx-0'>
-      <MantineProvider>
-        <Header />
-        <ResourceFinder />
-      </MantineProvider>
+      <Header selectedView={selectedView} setSelectedView={setSelectedView} />
+      <ResourceFinder selectedView={selectedView} />
     </div>
   );
 }

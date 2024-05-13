@@ -1,18 +1,59 @@
-import { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Listbox } from '@headlessui/react';
 import { CheckIcon, MapIcon } from '@heroicons/react/24/outline';
 import AssetListItem from './AssetListItem';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
 import resources from '../static/resources.json';
+import mapboxgl from 'mapbox-gl';
 
-export default function ResourceFinder() {
+// Types for mapbox-gl might need to be installed or declared as mentioned
+mapboxgl.accessToken =
+  'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
+
+interface ResourceFinderProps {
+  selectedView: string;
+}
+
+const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   const [selectedCounty, setSelectedCounty] = useState<{ value: string; label: string } | null>(
     null,
   );
   const [selectedType, setSelectedType] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 18;
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<mapboxgl.Map | null>(null);
 
-  const ITEMS_PER_PAGE = 18; // Change as needed
+  useEffect(() => {
+    if (selectedView === 'map') {
+      if (!mapInstance.current && mapContainer.current) {
+        mapInstance.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/light-v11',
+          center: [-79.0193, 35.7596],
+          zoom: 6,
+        });
+        mapInstance.current.addControl(new mapboxgl.NavigationControl());
+      }
+    } else {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+    }
+  }, [selectedView]);
+
+  const handleCountySelection = (option: { value: string; label: string }) => {
+    setSelectedCounty(selectedCounty === option ? null : option);
+  };
+
+  const toggleTypeSelection = (type: string) => {
+    setSelectedType((prevSelectedTypes) =>
+      prevSelectedTypes.includes(type)
+        ? prevSelectedTypes.filter((t) => t !== type)
+        : [...prevSelectedTypes, type],
+    );
+  };
 
   const filteredResources = resources
     .map((resource) => ({
@@ -30,18 +71,6 @@ export default function ResourceFinder() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
-
-  const handleCountySelection = (option: { value: string; label: string }) => {
-    setSelectedCounty(selectedCounty === option ? null : option);
-  };
-
-  const toggleTypeSelection = (type: string) => {
-    setSelectedType((prevSelectedTypes) =>
-      prevSelectedTypes.includes(type)
-        ? prevSelectedTypes.filter((t) => t !== type)
-        : [...prevSelectedTypes, type],
-    );
-  };
 
   return (
     <div className='w-full md:px-28 py-4'>
@@ -111,11 +140,17 @@ export default function ResourceFinder() {
         </div>
       </div>
       <hr className='border-t-1 border-black' />
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-8'>
-        {paginatedResources.map((resource, index) => (
-          <AssetListItem key={index} resource={resource} />
-        ))}
-      </div>
+
+      {selectedView === 'list' ? (
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-8'>
+          {paginatedResources.map((resource, index) => (
+            <AssetListItem key={index} resource={resource} />
+          ))}
+        </div>
+      ) : (
+        <div ref={mapContainer} className='map-container' style={{ height: '400px' }} />
+      )}
+
       {/* Pagination component */}
       <div className='flex justify-center items-center my-4'>
         <button
@@ -137,4 +172,6 @@ export default function ResourceFinder() {
       <div className='my-20 bg-black'></div>
     </div>
   );
-}
+};
+
+export default ResourceFinder;

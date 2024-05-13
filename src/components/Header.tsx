@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import React from 'react';
 import { QuestionMarkCircleIcon, MapPinIcon, ListBulletIcon } from '@heroicons/react/24/outline';
-// import Tooltip from './Tooltip';
 
-const Header = () => {
+interface HeaderProps {
+  selectedView: string;
+  setSelectedView: (view: string) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
   const iconSize = '2em';
-  const [hover, setHover] = useState(false);
-  const [selectedView, setSelectedView] = useState('list'); // default to 'list'
-
+  const [hover, setHover] = React.useState(false);
   return (
     <div className='w-full bg-white'>
+      {/* Other header content */}
       <div className='block md:grid md:grid-cols-12'>
         {/* Title */}
         <div className='mt-20 md:mb-12 col-start-2 col-span-8 text-left'>
@@ -35,8 +38,9 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Intro Text and Buttons */}
+      {/* Toggle Buttons */}
       <div className='grid grid-cols-12'>
+        {/* Map and List toggle buttons */}
         <div className='col-start-1 col-span-12 md:col-start-2 md:col-span-7 mb-4'>
           <p className=''>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent aliquam sagittis
@@ -44,9 +48,7 @@ const Header = () => {
             Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.{' '}
           </p>
         </div>
-        {/* Toggle Buttons */}
         <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
-          {/* <Tooltip message='Show me the data on an interactive map!'> */}
           <button
             className={`flex-grow flex items-center justify-center gap-2 py-1 md:h-14 rounded-l-lg ${
               selectedView === 'map'
@@ -58,7 +60,6 @@ const Header = () => {
             <MapPinIcon className='h-5 w-5 md:h-8 md:w-8' />
             Map
           </button>
-          {/* </Tooltip> */}
           <button
             className={`flex-grow flex items-center justify-center gap-2 py-1 md:h-14 rounded-r-lg ${
               selectedView === 'list'
