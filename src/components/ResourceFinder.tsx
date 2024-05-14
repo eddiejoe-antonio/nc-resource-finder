@@ -88,7 +88,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   }, [selectedView]);
 
   useEffect(() => {
-    if (mapInstance.current) {
+    if (mapInstance.current && mapInstance.current.isStyleLoaded()) {
       mapInstance.current.setPaintProperty('counties-layer', 'fill-color', [
         'case',
         ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
