@@ -25,58 +25,47 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<mapboxgl.Map | null>(null);
 
   useEffect(() => {
-    const map = mapContainer.current
-      ? new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/light-v11',
-          center: [-79.0193, 35.7596],
-          zoom: 6,
-          maxBounds: [
-            [-85, 34],
-            [-72, 37],
-          ], // Set the map's geographical boundaries.
-        })
-      : null;
+    if (selectedView === 'map' && !mapInstance.current && mapContainer.current) {
+      mapInstance.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [-79, 35],
+        zoom: 5.5,
+        maxBounds: [
+          [-90, 30],
+          [-70, 40],
+        ],
+        attributionControl: false, // Add this line to remove attribution control
+      });
 
-    if (map) {
-      map.on('load', () => {
-        map.addSource('counties', {
+      mapInstance.current.on('load', () => {
+        mapInstance.current?.addSource('counties', {
           type: 'vector',
-          url: 'mapbox://eddiejoeantonio.5kdb3ae2',
+          url: 'mapbox://eddiejoeantonio.5kdb3ae2', // Ensure this is the correct tileset ID
         });
-        map.addLayer({
+
+        mapInstance.current?.addLayer({
           id: 'counties-layer',
           type: 'fill',
           source: 'counties',
-          'source-layer': 'ncgeo',
+          'source-layer': 'ncgeo', // Ensure this is the correct source layer name
           paint: {
-            'fill-color': '#999B9D', // Default color
+            'fill-color': '#999B9D',
             'fill-outline-color': 'white',
           },
         });
 
-        map.on('click', 'counties-layer', (e) => {
+        mapInstance.current?.on('click', 'counties-layer', (e) => {
           if (e.features && e.features.length > 0 && e.features[0].properties) {
             const feature = e.features[0];
             if (feature.properties) {
               const countyName = feature.properties['County'];
               if (countyName) {
-                // Additional check if County is not undefined
                 const county = { value: countyName, label: countyName };
-                if (selectedCounty && selectedCounty.value === county.value) {
-                  setSelectedCounty(null);
-                } else {
-                  setSelectedCounty(county);
-                  const coordinates =
-                    feature.geometry.type === 'Polygon' ? feature.geometry.coordinates[0] : [];
-                  const bounds = new mapboxgl.LngLatBounds();
-                  coordinates.forEach((coord) => {
-                    bounds.extend(coord as mapboxgl.LngLatLike);
-                  });
-                  map.fitBounds(bounds, { padding: 20 });
-                }
+                handleCountySelection(county);
               }
             }
           }
@@ -84,8 +73,57 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       });
     }
 
-    return () => map?.remove(); // Cleanup map on component unmount
-  }, [selectedView]); // Reinitialize the map only if selectedView changes
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+    };
+  }, [selectedView]);
+
+  useEffect(() => {
+    if (mapInstance.current) {
+      mapInstance.current.setPaintProperty('counties-layer', 'fill-color', [
+        'case',
+        ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
+        '#092940', // Selected county color
+        '#999B9D', // Default color
+      ]);
+
+      if (selectedCounty) {
+        const bounds = new mapboxgl.LngLatBounds();
+        const features = mapInstance.current.querySourceFeatures('counties', {
+          sourceLayer: 'ncgeo',
+          filter: ['==', 'County', selectedCounty.value],
+        });
+
+        console.log('Features for selected county:', features);
+
+        if (features.length > 0) {
+          features.forEach((feature) => {
+            if (feature.geometry.type === 'Polygon') {
+              feature.geometry.coordinates[0].forEach((coord) => {
+                bounds.extend(coord as mapboxgl.LngLatLike);
+              });
+            }
+          });
+
+          if (bounds.isEmpty()) {
+            console.error('Bounds are empty for the selected county.');
+          } else {
+            mapInstance.current.fitBounds(bounds, { padding: 20 });
+          }
+        } else {
+          console.error('No features found for the selected county.');
+        }
+      } else {
+        mapInstance.current.flyTo({
+          center: [-79.0193, 35.7596], // Default center coordinates
+          zoom: 6, // Default zoom level
+        });
+      }
+    }
+  }, [selectedCounty]);
 
   const handleCountySelection = (option: County) => {
     setSelectedCounty(selectedCounty && selectedCounty.value === option.value ? null : option);
@@ -186,42 +224,69 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       <hr className='border-t-1 border-black' />
 
       {selectedView === 'list' ? (
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-8'>
-          {paginatedResources.map((resource, index) => (
-            <AssetListItem key={index} resource={resource} />
-          ))}
-        </div>
-      ) : (
         <div>
-          <div ref={mapContainer} className='map-container' style={{ height: '400px' }} />
-          {/* Show resources below the map based on the selected county */}
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-8'>
             {paginatedResources.map((resource, index) => (
               <AssetListItem key={index} resource={resource} />
             ))}
           </div>
+          {/* Pagination component for list view */}
+          <div className='flex justify-center items-center my-4'>
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
+            >
+              Previous
+            </button>
+            <span>{currentPage}</span>
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === Math.ceil(filteredResources.length / ITEMS_PER_PAGE)}
+              className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className='flex flex-col md:flex-row'>
+          <div
+            ref={mapContainer}
+            className='map-container h-[40vh] md:h-[60vh] lg:h-[80vh] w-full md:flex-2'
+            style={{ flex: 2 }}
+          />
+          {/* Sidebar for resources */}
+          <div
+            className='md:w-80 md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] p-4 w-full'
+            style={{ flex: 1, overflowY: 'auto' }}
+          >
+            <div className='space-y-4'>
+              {paginatedResources.map((resource, index) => (
+                <AssetListItem key={index} resource={resource} />
+              ))}
+            </div>
+            {/* Pagination component for map view */}
+            <div className='flex justify-center items-center my-4'>
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
+              >
+                Previous
+              </button>
+              <span>{currentPage}</span>
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === Math.ceil(filteredResources.length / ITEMS_PER_PAGE)}
+                className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Pagination component */}
-      <div className='flex justify-center items-center my-4'>
-        <button
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={currentPage === 1}
-          className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
-        >
-          Previous
-        </button>
-        <span>{currentPage}</span>
-        <button
-          onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={currentPage === Math.ceil(filteredResources.length / ITEMS_PER_PAGE)}
-          className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
-        >
-          Next
-        </button>
-      </div>
-      <div className='my-20 bg-black'></div>
     </div>
   );
 };
