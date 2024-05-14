@@ -6,33 +6,10 @@ body {
   font-family: 'Source Sans Pro', sans-serif;
 }
 
-.tooltip-icon:hover + .tooltip-content,
-.tooltip-icon:focus + .tooltip-content {
-  display: block; /* Show on hover or focus */
-}
-
-.tooltip-icon:active + .tooltip-content {
-  display: block; /* Show on hold for touch devices */
-}
-
-.tooltip-content {
-  top: -50%; /* Position below the icon */
-  left: 0%; /* Center the tooltip */ /* Ensure it's centered */
-  white-space: nowrap; /* Prevent text wrapping */
-}
-
-@media (hover: hover) {
-  .tooltip-icon:active + .tooltip-content {
-    display: none; /* Disable on hold for non-touch devices */
-  }
-}
-
-@media (hover: none) {
-  .tooltip-icon:hover + .tooltip-content {
-    display: none; /* Disable hover for touch devices */
-  }
-}
-
 .mapbox-control-container {
   display: none;
+}
+
+input {
+  color: black;
 }

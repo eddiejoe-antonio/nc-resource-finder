@@ -1,5 +1,6 @@
 import React from 'react';
 import { QuestionMarkCircleIcon, MapPinIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+import Tooltip from './Tooltip'; // Adjust the path based on your directory structure
 
 interface HeaderProps {
   selectedView: string;
@@ -8,13 +9,12 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
   const iconSize = '2em';
-  const [hover, setHover] = React.useState(false);
   return (
     <div className='w-full bg-white'>
       {/* Other header content */}
       <div className='block md:grid md:grid-cols-12 w-full'>
         {/* Title */}
-        <div className='mt-20 md:mb-12 col-start-2 col-span-8 text-left'>
+        <div className='mt-16 md:mb-12 col-start-2 col-span-8 text-left'>
           <span className="text-[#3B75A9] text-[1.25rem] md:text-[2rem] font-regular font-['Source Sans Pro'] uppercase">
             North Carolina{` `}
           </span>
@@ -23,18 +23,13 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
           </span>
         </div>
         {/* Question Mark Icon with Tooltip */}
-        <div
-          className='mb-4 flex justify-start items-center col-start-11 col-span-1 relative'
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-        >
-          <QuestionMarkCircleIcon
-            className='h-auto tooltip-icon'
-            style={{ width: iconSize, height: iconSize, color: hover ? '#1E79C8' : 'currentColor' }}
-          />
-          <div className='tooltip-content bg-black text-white text-sm p-4 rounded hidden absolute z-10'>
-            I want to learn more about this tool!
-          </div>
+        <div className='mb-4 flex justify-start items-center col-start-11 col-span-1 relative'>
+          <Tooltip message='I want to learn more about this tool!'>
+            <QuestionMarkCircleIcon
+              className='h-auto tooltip-icon'
+              style={{ width: iconSize, height: iconSize }}
+            />
+          </Tooltip>
         </div>
       </div>
 
@@ -43,9 +38,10 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
         {/* Map and List toggle buttons */}
         <div className='col-start-1 col-span-12 md:col-start-2 md:col-span-7 mb-4'>
           <p className=''>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent aliquam sagittis
-            augue, vitae convallis massa venenatis vel. Integer elementum id ligula vitae congue.
-            Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.{' '}
+            The North Carolina Office of Digital Equity and Literacy gathered digital equity
+            resources across the state. Use this application to filter and view resources in your
+            community, for the topic you are interested in, for someone you want to help out, and
+            more!{' '}
           </p>
         </div>
         <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
