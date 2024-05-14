@@ -1,6 +1,6 @@
 import React from 'react';
 import { QuestionMarkCircleIcon, MapPinIcon, ListBulletIcon } from '@heroicons/react/24/outline';
-import Tooltip from './Tooltip'; // Adjust the path based on your directory structure
+import Tooltip from './Tooltip';
 
 interface HeaderProps {
   selectedView: string;
@@ -26,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
         <div className='mb-4 flex justify-start items-center col-start-11 col-span-1 relative'>
           <Tooltip message='I want to learn more about this tool!'>
             <QuestionMarkCircleIcon
-              className='h-auto tooltip-icon'
+              className='h-auto'
               style={{ width: iconSize, height: iconSize }}
             />
           </Tooltip>

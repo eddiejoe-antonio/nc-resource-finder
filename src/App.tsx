@@ -1,18 +1,21 @@
-import { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
 import ResourceFinder from './components/ResourceFinder';
-import Footer from './components/Footer';
+import About from './components/About'; // Import About page
 
-function App() {
-  const [selectedView, setSelectedView] = useState('list'); // Maintain view state at App level
+const App: React.FC = () => {
+  const [selectedView, setSelectedView] = React.useState('list');
 
   return (
-    <div className='mx-4 md:mx-0'>
+    <Router>
       <Header selectedView={selectedView} setSelectedView={setSelectedView} />
-      <ResourceFinder selectedView={selectedView} />
-      <Footer />
-    </div>
+      <Routes>
+        <Route path='/about' element={<About />} />
+        <Route path='/' element={<ResourceFinder selectedView={selectedView} />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
