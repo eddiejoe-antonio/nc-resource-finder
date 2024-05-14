@@ -12,7 +12,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
   return (
     <div className='w-full bg-white'>
       {/* Other header content */}
-      <div className='block md:grid md:grid-cols-12'>
+      <div className='block md:grid md:grid-cols-12 w-full'>
         {/* Title */}
         <div className='mt-20 md:mb-12 col-start-2 col-span-8 text-left'>
           <span className="text-[#3B75A9] text-[1.25rem] md:text-[2rem] font-regular font-['Source Sans Pro'] uppercase">
@@ -39,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
       </div>
 
       {/* Toggle Buttons */}
-      <div className='grid grid-cols-12'>
+      <div className='grid grid-cols-12 w-full'>
         {/* Map and List toggle buttons */}
         <div className='col-start-1 col-span-12 md:col-start-2 md:col-span-7 mb-4'>
           <p className=''>

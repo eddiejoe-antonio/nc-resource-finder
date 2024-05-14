@@ -60,8 +60,8 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
           <div className='text-sm text-[#0E3052] mt-4'>
             <h3 className='my-2 font-semibold'>Description</h3>
             <p>{resource.Servicesprovided}</p>
-            <h3 className='my-2 font-semibold'>Organization Type</h3>
-            <p>{resource.OrganizationTypeBroadsector}</p>
+            {/* <h3 className='my-2 font-semibold'>Organization Type</h3>
+            <p>{resource.OrganizationTypeBroadsector}</p> */}
           </div>
         )}
       </div>
