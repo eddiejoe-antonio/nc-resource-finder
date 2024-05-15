@@ -24,8 +24,8 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
 
   return (
     <div className='w-full bg-white'>
-      <div className='block md:grid md:grid-cols-12 w-full items-center'>
-        <div className='mt-16 md:mb-12 col-start-2 col-span-8 text-left'>
+      <div className='block md:grid md:grid-cols-12 items-center'>
+        <div className='mt-16 md:mb-12 col-start-2 col-span-8 gap-0 text-left'>
           <span className="text-[#3B75A9] text-[1.25rem] md:text-[2rem] font-regular font-['Source Sans Pro'] uppercase">
             North Carolina{` `}
           </span>
@@ -46,10 +46,10 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
       <div className='grid grid-cols-12 w-full'>
         <div className='col-start-1 col-span-12 md:col-start-2 md:col-span-7 mb-4'>
           <p className=''>
-            The North Carolina Office of Digital Equity and Literacy gathered digital equity
+            The North Carolina Office of Digital Equity and Literacy has gathered digital equity
             resources across the state. Use this application to filter and view resources in your
-            community, for the topic you are interested in, for someone you want to help out, and
-            more!{' '}
+            community, find support across the state, or direct others to the tools they need to
+            thrive online. Help us build a stronger state of digital equity!
           </p>
         </div>
         <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
