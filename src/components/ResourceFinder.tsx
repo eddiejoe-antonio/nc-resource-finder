@@ -17,6 +17,28 @@ interface ResourceFinderProps {
   selectedView: string;
 }
 
+const Tooltip: React.FC<{ content: string; position: { x: number; y: number } }> = ({
+  content,
+  position,
+}) => (
+  <div
+    style={{
+      position: 'absolute',
+      top: position.y,
+      left: position.x,
+      backgroundColor: '#1E79C8',
+      color: 'white',
+      textTransform: 'uppercase',
+      padding: '10px',
+      borderRadius: '5px',
+      pointerEvents: 'none',
+      transform: 'translate(-50%, -120%)', // Adjust tooltip position relative to the cursor
+    }}
+  >
+    {content}
+  </div>
+);
+
 const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [selectedType, setSelectedType] = useState<string[]>([]);
@@ -24,6 +46,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [countyQuery, setCountyQuery] = useState<string>('');
   const [showCountyOptions, setShowCountyOptions] = useState<boolean>(false);
+  const [tooltipContent, setTooltipContent] = useState<string>('');
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
@@ -48,34 +73,67 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       });
 
       mapInstance.current.on('load', () => {
-        mapInstance.current?.addSource('counties', {
-          type: 'vector',
-          url: 'mapbox://eddiejoeantonio.5kdb3ae2',
-        });
+        if (mapInstance.current) {
+          mapInstance.current.addSource('counties', {
+            type: 'vector',
+            url: 'mapbox://eddiejoeantonio.5kdb3ae2',
+          });
 
-        mapInstance.current?.addLayer({
-          id: 'counties-layer',
-          type: 'fill',
-          source: 'counties',
-          'source-layer': 'ncgeo',
-          paint: {
-            'fill-color': '#999B9D',
-            'fill-outline-color': 'white',
-          },
-        });
+          mapInstance.current.addLayer({
+            id: 'counties-layer',
+            type: 'fill',
+            source: 'counties',
+            'source-layer': 'ncgeo',
+            paint: {
+              'fill-color': '#999B9D',
+              'fill-outline-color': 'white',
+            },
+          });
 
-        mapInstance.current?.on('click', 'counties-layer', (e) => {
-          if (e.features && e.features.length > 0) {
-            const feature = e.features[0];
-            if (feature.properties) {
-              const countyName = feature.properties['County'];
-              if (countyName) {
-                const county = { value: countyName, label: countyName };
-                handleCountySelection(county);
+          mapInstance.current.on('click', 'counties-layer', (e) => {
+            if (e.features && e.features.length > 0) {
+              const feature = e.features[0];
+              if (feature.properties) {
+                const countyName = feature.properties['County'];
+                if (countyName) {
+                  const county = { value: countyName, label: countyName };
+                  handleCountySelection(county);
+                }
               }
             }
-          }
-        });
+          });
+
+          mapInstance.current.on('mouseenter', 'counties-layer', () => {
+            if (mapInstance.current) {
+              mapInstance.current.getCanvas().style.cursor = 'pointer';
+              setShowTooltip(true);
+            }
+          });
+
+          mapInstance.current.on('mouseleave', 'counties-layer', () => {
+            if (mapInstance.current) {
+              mapInstance.current.getCanvas().style.cursor = '';
+              setShowTooltip(false);
+            }
+          });
+
+          mapInstance.current.on('mousemove', 'counties-layer', (e) => {
+            if (e.features && e.features.length > 0) {
+              const feature = e.features[0];
+              if (feature.properties) {
+                const countyName = feature.properties['County'];
+                if (countyName) {
+                  setTooltipContent(countyName);
+                  const offsetY = 10; // Adjust this value if necessary to align with the cursor
+                  setTooltipPosition({
+                    x: e.originalEvent.clientX,
+                    y: e.originalEvent.clientY - offsetY,
+                  });
+                }
+              }
+            }
+          });
+        }
       });
     }
 
@@ -133,7 +191,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
 
   const handleCountySelection = (county: County) => {
     setSelectedCounty((prevCounty) => {
-      if (prevCounty?.value === county.value) {
+      if (prevCounty && prevCounty.value === county.value) {
         setCountyQuery('');
         return null;
       }
@@ -239,12 +297,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
                 >
                   <span
                     className={`block truncate ${
-                      selectedCounty?.value === option.value ? 'font-medium' : 'font-normal'
+                      selectedCounty && selectedCounty.value === option.value
+                        ? 'font-medium'
+                        : 'font-normal'
                     }`}
                   >
                     {option.label} County
                   </span>
-                  {selectedCounty?.value === option.value && (
+                  {selectedCounty && selectedCounty.value === option.value && (
                     <span className='absolute inset-y-0 left-0 flex items-center pl-3'>
                       <CheckIcon className='h-5 w-5' aria-hidden='true' />
                     </span>
@@ -304,7 +364,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
             className='map-container h-[50vh] md:h-[60vh] lg:h-[80vh] w-full md:w-[55vw] md:flex-2'
           />
           <div
-            className='md:w-80 md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] p-4 w-full'
+            className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-2 md:py-0 md:p-4 w-full'
             style={{ flex: 1, overflowY: 'auto' }}
           >
             <div className='space-y-4 py-6'>
@@ -332,6 +392,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
           </div>
         </div>
       )}
+      {showTooltip && <Tooltip content={tooltipContent} position={tooltipPosition} />}
     </div>
   );
 };
