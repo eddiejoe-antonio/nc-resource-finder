@@ -32,7 +32,7 @@ const Tooltip: React.FC<{ content: string; position: { x: number; y: number } }>
       padding: '10px',
       borderRadius: '5px',
       pointerEvents: 'none',
-      transform: 'translate(-50%, -120%)', // Adjust tooltip position relative to the cursor
+      transform: 'translate(-50%, -100%)',
     }}
   >
     {content}
@@ -57,6 +57,13 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
   );
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      setShowTooltip(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedView === 'map' && !mapInstance.current && mapContainer.current) {
@@ -104,27 +111,31 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
           });
 
           mapInstance.current.on('mouseenter', 'counties-layer', () => {
-            if (mapInstance.current) {
-              mapInstance.current.getCanvas().style.cursor = 'pointer';
-              setShowTooltip(true);
+            if (window.innerWidth >= 768) {
+              if (mapInstance.current) {
+                mapInstance.current.getCanvas().style.cursor = 'pointer';
+                setShowTooltip(true);
+              }
             }
           });
 
           mapInstance.current.on('mouseleave', 'counties-layer', () => {
-            if (mapInstance.current) {
-              mapInstance.current.getCanvas().style.cursor = '';
-              setShowTooltip(false);
+            if (window.innerWidth >= 768) {
+              if (mapInstance.current) {
+                mapInstance.current.getCanvas().style.cursor = '';
+                setShowTooltip(false);
+              }
             }
           });
 
           mapInstance.current.on('mousemove', 'counties-layer', (e) => {
-            if (e.features && e.features.length > 0) {
+            if (window.innerWidth >= 768 && e.features && e.features.length > 0) {
               const feature = e.features[0];
               if (feature.properties) {
                 const countyName = feature.properties['County'];
                 if (countyName) {
                   setTooltipContent(countyName);
-                  const offsetY = 10; // Adjust this value if necessary to align with the cursor
+                  const offsetY = 20; // Adjust this value if necessary to align with the cursor
                   setTooltipPosition({
                     x: e.originalEvent.clientX,
                     y: e.originalEvent.clientY - offsetY,
@@ -392,7 +403,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
           </div>
         </div>
       )}
-      {showTooltip && <Tooltip content={tooltipContent} position={tooltipPosition} />}
+      {showTooltip && window.innerWidth >= 768 && (
+        <Tooltip content={tooltipContent} position={tooltipPosition} />
+      )}
     </div>
   );
 };
