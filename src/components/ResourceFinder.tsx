@@ -65,7 +65,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
         });
 
         mapInstance.current?.on('click', 'counties-layer', (e) => {
-          if (e.features && e.features.length > 0 && e.features[0].properties) {
+          if (e.features && e.features.length > 0) {
             const feature = e.features[0];
             if (feature.properties) {
               const countyName = feature.properties['County'];
@@ -238,7 +238,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
                   className='cursor-default select-none relative py-2 pl-10 pr-4 text-gray-900 hover:bg-blue-600 hover:text-white'
                 >
                   <span
-                    className={`block truncate ${selectedCounty?.value === option.value ? 'font-medium' : 'font-normal'}`}
+                    className={`block truncate ${
+                      selectedCounty?.value === option.value ? 'font-medium' : 'font-normal'
+                    }`}
                   >
                     {option.label} County
                   </span>
@@ -299,8 +301,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
         <div className='flex flex-col md:flex-row'>
           <div
             ref={mapContainer}
-            className='map-container h-[40vh] md:h-[60vh] lg:h-[80vh] w-full md:flex-2'
-            style={{ flex: 2 }}
+            className='map-container h-[50vh] md:h-[60vh] lg:h-[80vh] w-full md:w-[55vw] md:flex-2'
           />
           <div
             className='md:w-80 md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] p-4 w-full'

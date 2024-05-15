@@ -6,10 +6,22 @@ body {
   font-family: 'Source Sans Pro', sans-serif;
 }
 
-.mapbox-control-container {
-  display: none;
-}
-
 input {
   color: black;
+}
+
+.map-container {
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .map-container {
+    height: 50vh; /* Ensure the height is 50% of the viewport height on mobile devices */
+  }
+}
+
+@media (min-width: 769px) {
+  .map-container {
+    height: 60vh; /* Ensure the height is appropriate for desktop devices */
+  }
 }
