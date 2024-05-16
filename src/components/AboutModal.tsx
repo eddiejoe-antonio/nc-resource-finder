@@ -25,20 +25,17 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
     <div className='fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50'>
       <div
         ref={modalRef}
-        className='bg-[white] rounded-sm overflow-hidden shadow-lg w-full max-w-4xl mx-4 md:mx-auto'
+        className='bg-white rounded-md overflow-hidden shadow-lg w-full max-w-4xl mx-4 md:mx-auto max-h-[80vh] md:max-h-[90vh] lg:max-h-[100vh] transform transition-transform duration-300 ease-in-out animate-modal'
       >
-        <div className='flex justify-end p-2 py-4 md:py-0'>
-          <button
-            className='text-gray-700 hover:text-gray-900 pt-12 md:pt-4 px-4'
-            onClick={onClose}
-          >
+        <div className='flex justify-end px-4 py-2'>
+          <button className='text-gray-700 hover:text-gray-900' onClick={onClose}>
             <span className='text-2xl'>&times;</span>
           </button>
         </div>
-        <div className='px-6 max-h-screen overflow-y-auto'>
+        <div className='px-6 pt-2 pb-6 overflow-y-auto max-h-[80vh]'>
           <div className='flex flex-col md:flex-row md:space-x-12 pb-8'>
             <div className='flex-1'>
-              <section className='py-8 mb-4'>
+              <section className='mb-4'>
                 <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940] uppercase mb-4'>
                   How Did North Carolina Gather These Resources?
                 </h2>
@@ -67,7 +64,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
               <img
                 src={illustration}
                 alt='Resource and Contribution Illustration'
-                className='w-full h-full object-cover mt-8 mb-8 md:mb-0'
+                className='w-full h-full object-cover mt-8 md:mt-0 mb-8 md:mb-0'
               />
             </div>
           </div>
