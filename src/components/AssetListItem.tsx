@@ -20,7 +20,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   </div>;
 
   return (
-    <div className='flex flex-col font-inter border bg-white drop-shadow-md border-primary-800 overflow-hidden transition-all ease-in-out duration-300'>
+    <div className='flex flex-col font-inter border bg-white drop-shadow-md border-primary-800 overflow-hidden transition-all ease-in-out duration-300 rounded-md'>
       <div className='bg-[#EEF7FF] p-4'>
         <h3 className='text-md font-semibold'>{resource.Name}</h3>
       </div>

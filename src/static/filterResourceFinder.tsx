@@ -2,7 +2,6 @@ import {
   CheckIcon,
   WifiIcon,
   UserGroupIcon,
-  BookOpenIcon,
   DeviceTabletIcon,
   AdjustmentsVerticalIcon,
   BanknotesIcon,
@@ -77,13 +76,6 @@ export const typeFilterData: FilterData = {
       checked: false,
       type: 'Type',
       icon: BanknotesIcon,
-    },
-    {
-      value: 'Digitial Skills (Classes and Training)',
-      label: 'Digitial Skills (Classes and Training)',
-      checked: false,
-      type: 'Type',
-      icon: BookOpenIcon,
     },
   ],
 };
