@@ -25,7 +25,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
     <div className='fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50'>
       <div
         ref={modalRef}
-        className='bg-white rounded-md overflow-hidden shadow-lg w-full max-w-4xl mx-4 md:mx-auto max-h-[80vh] md:max-h-[90vh] lg:max-h-[100vh] transform transition-transform duration-300 ease-in-out animate-modal'
+        className='bg-white rounded-md overflow-hidden shadow-lg w-full max-w-4xl mx-4 md:mx-auto max-h-[80vh] md:max-h-[90vh] lg:max-h-[100vh] md:p-4'
       >
         <div className='flex justify-end px-4 py-2'>
           <button className='text-gray-700 hover:text-gray-900' onClick={onClose}>
