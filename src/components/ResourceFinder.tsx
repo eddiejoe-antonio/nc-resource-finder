@@ -4,6 +4,7 @@ import AssetListItem from './AssetListItem';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
 import resources from '../static/resources.json';
 import mapboxgl from 'mapbox-gl';
+import { Polygon, Position } from 'geojson';
 
 mapboxgl.accessToken =
   'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
@@ -49,6 +50,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   const [tooltipContent, setTooltipContent] = useState<string>('');
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
@@ -59,10 +61,13 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   );
 
   useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      setShowTooltip(false);
-    }
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -97,6 +102,19 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
             },
           });
 
+          mapInstance.current.addLayer({
+            id: 'counties-layer-hover',
+            type: 'fill',
+            source: 'counties',
+            'source-layer': 'ncgeo',
+            paint: {
+              'fill-color': '#092940',
+              'fill-outline-color': 'white',
+              'fill-opacity': 0.75,
+            },
+            filter: ['==', 'County', ''],
+          });
+
           mapInstance.current.on('click', 'counties-layer', (e) => {
             if (e.features && e.features.length > 0) {
               const feature = e.features[0];
@@ -111,7 +129,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
           });
 
           mapInstance.current.on('mouseenter', 'counties-layer', () => {
-            if (window.innerWidth >= 768) {
+            if (!isMobile) {
               if (mapInstance.current) {
                 mapInstance.current.getCanvas().style.cursor = 'pointer';
                 setShowTooltip(true);
@@ -120,26 +138,40 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
           });
 
           mapInstance.current.on('mouseleave', 'counties-layer', () => {
-            if (window.innerWidth >= 768) {
+            if (!isMobile) {
               if (mapInstance.current) {
                 mapInstance.current.getCanvas().style.cursor = '';
                 setShowTooltip(false);
+                mapInstance.current.setFilter('counties-layer-hover', ['==', 'County', '']);
               }
             }
           });
 
           mapInstance.current.on('mousemove', 'counties-layer', (e) => {
-            if (window.innerWidth >= 768 && e.features && e.features.length > 0) {
+            if (!isMobile && e.features && e.features.length > 0) {
               const feature = e.features[0];
               if (feature.properties) {
                 const countyName = feature.properties['County'];
                 if (countyName) {
                   setTooltipContent(countyName);
-                  const offsetY = 20; // Adjust this value if necessary to align with the cursor
+
+                  const coordinates = (feature.geometry as Polygon).coordinates[0] as Position[];
+                  const centroid = calculateCentroid(coordinates);
+                  const point = mapInstance.current?.project(centroid as mapboxgl.LngLatLike) ?? {
+                    x: 0,
+                    y: 0,
+                  };
+
                   setTooltipPosition({
-                    x: e.originalEvent.clientX,
-                    y: e.originalEvent.clientY - offsetY,
+                    x: point.x,
+                    y: point.y,
                   });
+
+                  mapInstance.current?.setFilter('counties-layer-hover', [
+                    '==',
+                    'County',
+                    countyName,
+                  ]);
                 }
               }
             }
@@ -149,15 +181,13 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
     }
 
     return () => {
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
-      }
+      mapInstance.current?.remove();
+      mapInstance.current = null;
     };
-  }, [selectedView]);
+  }, [selectedView, isMobile]);
 
   useEffect(() => {
-    if (mapInstance.current && mapInstance.current.isStyleLoaded()) {
+    if (mapInstance.current?.isStyleLoaded()) {
       mapInstance.current.setPaintProperty('counties-layer', 'fill-color', [
         'case',
         ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
@@ -167,26 +197,27 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
 
       if (selectedCounty) {
         const bounds = new mapboxgl.LngLatBounds();
-        const features = mapInstance.current.querySourceFeatures('counties', {
-          sourceLayer: 'ncgeo',
-          filter: ['==', 'County', selectedCounty.value],
-        });
+        const features =
+          mapInstance.current?.querySourceFeatures('counties', {
+            sourceLayer: 'ncgeo',
+            filter: ['==', 'County', selectedCounty.value],
+          }) ?? [];
 
         if (features.length > 0) {
           features.forEach((feature) => {
             if (feature.geometry.type === 'Polygon') {
-              feature.geometry.coordinates[0].forEach((coord) => {
+              (feature.geometry.coordinates[0] as Position[]).forEach((coord) => {
                 bounds.extend(coord as mapboxgl.LngLatLike);
               });
             }
           });
 
           if (!bounds.isEmpty()) {
-            mapInstance.current.fitBounds(bounds, { padding: 20 });
+            mapInstance.current?.fitBounds(bounds, { padding: 20 });
           }
         }
       } else {
-        mapInstance.current.flyTo({
+        mapInstance.current?.flyTo({
           center: [-79.0193, 35.7596],
           zoom: 6,
         });
@@ -269,6 +300,18 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [dropdownRef]);
+
+  const calculateCentroid = (coordinates: Position[]): [number, number] => {
+    let x = 0,
+      y = 0,
+      n = 0;
+    coordinates.forEach((coord: Position) => {
+      x += coord[0];
+      y += coord[1];
+      n++;
+    });
+    return [x / n, y / n];
+  };
 
   return (
     <div className='w-full md:px-28 py-4'>

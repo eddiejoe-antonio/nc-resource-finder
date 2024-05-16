@@ -23,19 +23,12 @@ export interface FilterOption {
   type: string;
   icon?: React.ElementType; // Add icon field to the FilterOption interface
 }
-// Example data for the 'Geography' filter
+
 export const typeFilterData: FilterData = {
   id: 'type',
   name: 'Type',
   explanation: 'Select one or more counties to see resources available in those areas.',
   options: [
-    {
-      value: 'Digital Navigation',
-      label: 'Digital Navigation',
-      checked: false,
-      type: 'Type',
-      icon: AdjustmentsVerticalIcon,
-    },
     {
       value: 'Device Access',
       label: 'Device Access',
@@ -65,6 +58,13 @@ export const typeFilterData: FilterData = {
       icon: ChatBubbleOvalLeftIcon,
     },
     {
+      value: 'Digital Navigation',
+      label: 'Digital Navigation',
+      checked: false,
+      type: 'Type',
+      icon: AdjustmentsVerticalIcon,
+    },
+    {
       value: 'Digital Skills & Technical Support',
       label: 'Digital Skills & Technical Support',
       checked: false,
@@ -88,7 +88,6 @@ export const typeFilterData: FilterData = {
   ],
 };
 
-// Example data for the 'Geography' filter
 export const geographyFilterData: FilterData = {
   id: 'geography',
   name: 'County',
