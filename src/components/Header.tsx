@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
         <div className='flex justify-start items-center col-start-10 col-span-2 my-4 md:my-0 md:mt-3'>
           <button
             onClick={handleAboutClick}
-            className='flex items-center px-4 py-2 bg-[#FFE9EE] rounded-full shadow-lg cursor-pointer md:hover:bg-[#BC2442] md:hover:text-[#FFE9EE] text-[#BC2442] transition ease-in-out duration-300'
+            className='flex items-center px-4 py-2 bg-[#FFE9EE] rounded-full shadow-md cursor-pointer md:hover:bg-[#BC2442] md:hover:text-[#FFE9EE] text-[#BC2442] transition ease-in-out duration-300'
           >
             <QuestionMarkCircleIcon className='w-6 h-6 mr-2' />
             <span className='whitespace-nowrap'>Learn More</span>
@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
         </div>
         <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
           <button
-            className={`flex-grow flex items-center justify-center gap-2 py-1 md:h-14 rounded-l-lg ${
+            className={`flex-grow flex items-center justify-center shadow-md  gap-2 py-1 md:h-14 rounded-l-lg ${
               selectedView === 'map'
                 ? 'bg-[#092940] hover:bg-[#092940] text-white transition ease-in-out duration-300'
                 : 'bg-[#1E79C8] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
@@ -64,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
             Map
           </button>
           <button
-            className={`flex-grow flex items-center justify-center gap-2 py-1 md:h-14 rounded-r-lg ${
+            className={`flex-grow flex items-center justify-center shadow-md  gap-2 py-1 md:h-14 rounded-r-lg ${
               selectedView === 'list'
                 ? 'bg-[#092940] hover:bg-[#092940] text-white transition ease-in-out duration-300'
                 : 'bg-[#1E79C8] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
