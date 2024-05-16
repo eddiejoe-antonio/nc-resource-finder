@@ -67,16 +67,20 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
             url: 'mapbox://eddiejoeantonio.5kdb3ae2',
           });
 
-          mapInstance.current.addLayer({
-            id: 'counties-layer',
-            type: 'fill',
-            source: 'counties',
-            'source-layer': 'ncgeo',
-            paint: {
-              'fill-color': '#999B9D',
-              'fill-outline-color': 'white',
+          mapInstance.current.addLayer(
+            {
+              id: 'counties-layer',
+              type: 'fill',
+              source: 'counties',
+              'source-layer': 'ncgeo',
+              paint: {
+                'fill-color': '#999B9D',
+                'fill-opacity': 1,
+                'fill-outline-color': 'white',
+              },
             },
-          });
+            'settlement-subdivision-label',
+          );
 
           mapInstance.current.addLayer({
             id: 'counties-layer-hover',
@@ -86,7 +90,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
             paint: {
               'fill-color': '#092940',
               'fill-outline-color': 'white',
-              'fill-opacity': 0.75,
+              'fill-opacity': 1,
             },
             filter: ['==', 'County', ''],
           });
