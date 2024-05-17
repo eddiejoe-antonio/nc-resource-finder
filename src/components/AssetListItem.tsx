@@ -20,11 +20,12 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   </div>;
 
   return (
-    <div className='flex flex-col font-inter border bg-white drop-shadow-md border-primary-800 overflow-hidden transition-all ease-in-out duration-300 rounded-md'>
-      <div className='bg-[#EEF7FF] p-4'>
+    <div className='flex flex-col font-inter border bg-white drop-shadow-md border-[#0E3052] overflow-hidden transition-all ease-in-out duration-300 rounded-md '>
+      <div className=' text-black p-4'>
         <h3 className='text-md font-semibold'>{resource.Name}</h3>
+        <hr className='mt-3' />
       </div>
-      <div className='px-4 pt-6'>
+      <div className='px-4 pt-2'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
           <MapPinIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
           {resource.Geography}
