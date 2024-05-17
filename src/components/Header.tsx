@@ -29,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
             North Carolina{` `}
           </span>
           <span className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-black font-['Source Sans Pro'] uppercase">
-            Digital Equity Resource Finder
+            Tech Resource Finder
           </span>
         </div>
         <div className='flex justify-start items-center col-start-10 col-span-2 my-4 md:my-0 md:mt-3'>
@@ -45,10 +45,10 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
       <div className='grid grid-cols-12 w-full'>
         <div className='col-start-1 col-span-12 md:col-start-2 md:col-span-7 mb-4'>
           <p className=''>
-            <strong className=''>Welcome to the Resource Finder!</strong> The North Carolina Office
-            of Digital Equity and Literacy built this interactive tool for exploring the digital
-            equity resources available in North Carolina. Scroll, filter, and click through the
-            results to find support for digital equity needs across North Carolina.{' '}
+            <strong className=''>Welcome to the Tech Resource Finder!</strong> The North Carolina
+            Office of Digital Equity and Literacy built this interactive tool for exploring the
+            digital equity resources available in North Carolina. Scroll, filter, and click through
+            the results to find support for digital equity needs across North Carolina.{' '}
           </p>
         </div>
         <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
