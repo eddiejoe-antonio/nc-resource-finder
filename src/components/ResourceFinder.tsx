@@ -82,18 +82,21 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
             'settlement-subdivision-label',
           );
 
-          mapInstance.current.addLayer({
-            id: 'counties-layer-hover',
-            type: 'fill',
-            source: 'counties',
-            'source-layer': 'ncgeo',
-            paint: {
-              'fill-color': '#092940',
-              'fill-outline-color': 'white',
-              'fill-opacity': 1,
+          mapInstance.current.addLayer(
+            {
+              id: 'counties-layer-hover',
+              type: 'fill',
+              source: 'counties',
+              'source-layer': 'ncgeo',
+              paint: {
+                'fill-color': '#092940',
+                'fill-outline-color': 'white',
+                'fill-opacity': 0.8,
+              },
+              filter: ['==', 'County', ''],
             },
-            filter: ['==', 'County', ''],
-          });
+            'settlement-subdivision-label',
+          );
 
           mapInstance.current.on('click', 'counties-layer', (e) => {
             if (e.features && e.features.length > 0) {
