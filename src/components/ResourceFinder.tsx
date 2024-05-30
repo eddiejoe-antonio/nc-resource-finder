@@ -25,12 +25,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [countyQuery, setCountyQuery] = useState<string>('');
   const [showCountyOptions, setShowCountyOptions] = useState<boolean>(false);
+  const [highlightedCountyIndex, setHighlightedCountyIndex] = useState<number>(-1);
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const countyInputRef = useRef<HTMLInputElement>(null);
 
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
@@ -50,7 +52,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
     if (selectedView === 'map' && !mapInstance.current && mapContainer.current) {
       mapInstance.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
+        style: 'mapbox://styles/eddiejoeantonio/clwtppqme058301ql266g5top',
         center: [-79, 35],
         zoom: 5.5,
         maxBounds: [
@@ -67,36 +69,30 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
             url: 'mapbox://eddiejoeantonio.5kdb3ae2',
           });
 
-          mapInstance.current.addLayer(
-            {
-              id: 'counties-layer',
-              type: 'fill',
-              source: 'counties',
-              'source-layer': 'ncgeo',
-              paint: {
-                'fill-color': '#999B9D',
-                'fill-opacity': 1,
-                'fill-outline-color': 'white',
-              },
+          mapInstance.current.addLayer({
+            id: 'counties-layer',
+            type: 'fill',
+            source: 'counties',
+            'source-layer': 'ncgeo',
+            paint: {
+              'fill-color': '#acacac',
+              'fill-opacity': 0.9,
+              'fill-outline-color': 'white',
             },
-            'settlement-subdivision-label',
-          );
+          });
 
-          mapInstance.current.addLayer(
-            {
-              id: 'counties-layer-hover',
-              type: 'fill',
-              source: 'counties',
-              'source-layer': 'ncgeo',
-              paint: {
-                'fill-color': '#092940',
-                'fill-outline-color': 'white',
-                'fill-opacity': 0.8,
-              },
-              filter: ['==', 'County', ''],
+          mapInstance.current.addLayer({
+            id: 'counties-layer-hover',
+            type: 'fill',
+            source: 'counties',
+            'source-layer': 'ncgeo',
+            paint: {
+              'fill-color': '#888',
+              'fill-outline-color': 'white',
+              'fill-opacity': 0.7,
             },
-            'settlement-subdivision-label',
-          );
+            filter: ['==', 'County', ''],
+          });
 
           mapInstance.current.on('click', 'counties-layer', (e) => {
             if (e.features && e.features.length > 0) {
@@ -175,8 +171,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       mapInstance.current.setPaintProperty('counties-layer', 'fill-color', [
         'case',
         ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
-        '#092940',
-        '#999B9D',
+        '#888',
+        '#adadad',
       ]);
 
       if (selectedCounty) {
@@ -269,6 +265,25 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   const handleCountyQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCountyQuery(e.target.value);
     setShowCountyOptions(true);
+    setHighlightedCountyIndex(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedCountyIndex((prevIndex) =>
+        prevIndex < filteredCounties.length - 1 ? prevIndex + 1 : prevIndex,
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedCountyIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
+    } else if (e.key === 'Enter') {
+      if (highlightedCountyIndex >= 0 && highlightedCountyIndex < filteredCounties.length) {
+        handleCountySelection(filteredCounties[highlightedCountyIndex]);
+      }
+    } else if (e.key === 'Tab') {
+      setShowCountyOptions(false);
+    }
   };
 
   useEffect(() => {
@@ -285,14 +300,18 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
   }, [dropdownRef]);
 
   return (
-    <div className='w-full md:px-28 py-4'>
+    <div className='w-full md:px-28 2xl:px-40 py-4'>
       <hr className='border-t-1 border-black' />
       <div className='flex flex-col lg:flex-row lg:items-start lg:space-x-4 py-4 px-2 bg-[#EEF7FF]'>
         <div className='relative flex-1 mb-4 lg:mb-0 lg:w-1/2'>
+          <label htmlFor='keyword-input' className='hidden text-sm font-medium text-gray-700'>
+            Keyword Search
+          </label>
           <span className='absolute inset-y-0 left-2 flex items-center'>
             <MagnifyingGlassIcon className='h-6 w-6 text-black' aria-hidden='true' />
           </span>
           <input
+            id='keyword-input'
             type='text'
             placeholder="I'm looking for..."
             className='w-full bg-white border border-gray-300 rounded-full shadow-md pl-10 pr-4 py-2 text-left cursor-default text-black'
@@ -301,24 +320,34 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
           />
         </div>
         <div className='relative flex-1 mb-0 md:mb-4 lg:mb-0 lg:w-1/2' ref={dropdownRef}>
+          <label htmlFor='county-input' className='hidden text-sm font-medium text-gray-700'>
+            County Selector
+          </label>
           <span className='absolute inset-y-0 left-2 flex items-center'>
             <MapIcon className='h-6 w-6 text-black' aria-hidden='true' />
           </span>
           <input
+            id='county-input'
             type='text'
             placeholder='I am looking in...'
             className='w-full bg-white border border-gray-300 rounded-full shadow-md pl-10 pr-4 py-2 text-left cursor-default text-black'
             value={countyQuery}
             onChange={handleCountyQueryChange}
             onFocus={() => setShowCountyOptions(true)}
+            onKeyDown={handleKeyDown}
+            ref={countyInputRef}
           />
+
           {showCountyOptions && (
             <div className='absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm'>
-              {filteredCounties.map((option) => (
+              {filteredCounties.map((option, index) => (
                 <div
                   key={option.value}
                   onClick={() => handleCountySelection(option)}
-                  className='cursor-default select-none relative py-2 pl-10 pr-4 text-gray-900 hover:bg-blue-600 hover:text-white'
+                  onMouseEnter={() => setHighlightedCountyIndex(-1)}
+                  className={`cursor-default select-none relative py-2 pl-10 pr-4 text-gray-900 hover:bg-blue-600 hover:text-white ${
+                    highlightedCountyIndex === index ? 'bg-blue-600 text-white' : ''
+                  }`}
                 >
                   <span
                     className={`block truncate ${
@@ -343,6 +372,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       <div className='flex flex-wrap py-2 justify-start bg-[#EEF7FF]'>
         {typeFilterData.options.map((option: FilterOption) => (
           <button
+            aria-pressed='false'
             key={option.value}
             onClick={() => toggleTypeSelection(option.value)}
             className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 rounded-full shadow-lg transition-colors whitespace-nowrap ${
