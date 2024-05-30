@@ -25,17 +25,22 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
     <div className='w-full'>
       <div className='block md:grid md:grid-cols-12 items-center'>
         <div className='mt-16 md:mb-12 col-start-2 col-span-8 gap-0 text-left'>
-          <span className="block md:inline text-[#3B75A9] text-[1.5rem] md:text-[2rem] font-regular font-['Source Sans Pro'] uppercase">
+          <h1 className="block md:inline text-[#3B75A9] text-[1.5rem] md:text-[2rem] font-regular font-['Source Sans Pro'] uppercase">
             North Carolina{` `}
-          </span>
-          <span className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-black font-['Source Sans Pro'] uppercase">
+          </h1>
+          <h1 className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-black font-['Source Sans Pro'] uppercase">
             Tech Resource Finder
-          </span>
+          </h1>
         </div>
         <div className='flex justify-start items-center col-start-10 col-span-2 my-4 md:my-0 md:mt-3'>
           <button
+            aria-label='Open modal'
             onClick={handleAboutClick}
-            className='flex items-center px-4 py-2 bg-[#FFE9EE] rounded-full shadow-md cursor-pointer md:hover:bg-[#BC2442] md:hover:text-[#FFE9EE] text-[#BC2442] transition ease-in-out duration-300'
+            className={`flex items-center px-4 py-2 rounded-full shadow-md cursor-pointer transition ease-in-out duration-300 ${
+              isModalOpen
+                ? 'bg-[#BC2442] text-[#FFE9EE]'
+                : 'bg-[#FFE9EE] text-[#BC2442] hover:bg-[#BC2442] hover:text-[#FFE9EE]'
+            }`}
           >
             <QuestionMarkCircleIcon className='w-6 h-6 mr-2' />
             <span className='whitespace-nowrap'>Learn More</span>
@@ -53,9 +58,9 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
         </div>
         <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
           <button
-            className={`flex-grow flex items-center justify-center shadow-md  gap-2 py-1 md:h-14 rounded-l-lg ${
+            className={`flex-grow flex items-center justify-center shadow-md gap-2 py-1 md:h-14 rounded-l-lg ${
               selectedView === 'map'
-                ? 'bg-[#092940] hover:bg-[#092940] text-white transition ease-in-out duration-300'
+                ? 'bg-[#092940] text-white'
                 : 'bg-[#1E79C8] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
             }`}
             onClick={() => handleNavigate('map')}
@@ -64,9 +69,9 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
             Map
           </button>
           <button
-            className={`flex-grow flex items-center justify-center shadow-md  gap-2 py-1 md:h-14 rounded-r-lg ${
+            className={`flex-grow flex items-center justify-center shadow-md gap-2 py-1 md:h-14 rounded-r-lg ${
               selectedView === 'list'
-                ? 'bg-[#092940] hover:bg-[#092940] text-white transition ease-in-out duration-300'
+                ? 'bg-[#092940] text-white'
                 : 'bg-[#1E79C8] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
             }`}
             onClick={() => handleNavigate('list')}

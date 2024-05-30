@@ -52,8 +52,9 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
       </div>
       <div className='px-4 pb-4'>
         <button
+          aria-label='Toggle to show and hide additional information. '
           onClick={() => setShowMore(!showMore)}
-          className='bg-[#1E79C8] hover:bg-[#3892E1] text-white text-sm px-12 py-2 rounded-full focus:outline-none focus:shadow-outline transition-colors duration-300 flex items-center justify-center gap-2 shadow'
+          className='bg-[#1E79C8] hover:bg-[#3892E1] text-white text-sm cursor-pointer px-12 py-2 rounded-full transition-colors duration-300 flex items-center justify-center gap-2 shadow'
         >
           {showMore ? <>Collapse</> : <>Learn More</>}
         </button>
