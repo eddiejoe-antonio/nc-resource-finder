@@ -35,6 +35,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
+  const assetSectionRef = useRef<HTMLDivElement>(null);
 
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
@@ -224,7 +225,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     });
     setShowCountyOptions(false);
     setCurrentPage(1); // Reset to first page
-    scrollToTop(); // Scroll to top
   };
 
   const toggleTypeSelection = (type: string) => {
@@ -312,7 +312,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   }, [dropdownRef]);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (assetSectionRef.current) {
+      assetSectionRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -428,6 +430,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             className='map-container h-[50vh] md:h-[60vh] lg:h-[80vh] w-full md:w-[55vw] md:flex-2'
           />
           <div
+            ref={assetSectionRef}
             className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-2 md:py-0 md:p-4 w-full'
             style={{ flex: 1, overflowY: 'auto' }}
           >
