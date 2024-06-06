@@ -214,6 +214,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     }
   }, [countyQuery]);
 
+  useEffect(() => {
+    setCurrentPage(1); // Reset to first page when view changes
+  }, [selectedView]);
+
   const handleCountySelection = (county: County) => {
     setSelectedCounty((prevCounty) => {
       if (prevCounty && prevCounty.value === county.value) {
