@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QuestionMarkCircleIcon, MapPinIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
-import AboutModal from './AboutModal'; // Import the modal component
+import AboutModal from './AboutModal';
 
 interface HeaderProps {
   selectedView: string;
   setSelectedView: (view: string) => void;
+  setIsModalOpen: (isOpen: boolean) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
+const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsModalOpen }) => {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
+  const [isModalOpen, setIsModalOpenLocal] = useState(false);
 
   const handleNavigate = (view: string) => {
     setSelectedView(view);
@@ -18,8 +19,29 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
   };
 
   const handleAboutClick = () => {
-    setIsModalOpen(true); // Open the modal
+    setIsModalOpenLocal(true);
+    setIsModalOpen(true);
   };
+
+  const handleModalClose = () => {
+    setIsModalOpenLocal(false);
+    setIsModalOpen(false);
+  };
+
+  const handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      if (isModalOpen) {
+        handleModalClose();
+      }
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isModalOpen]);
 
   return (
     <div className='w-full'>
@@ -83,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView }) => {
       </div>
 
       {/* About Modal */}
-      {isModalOpen && <AboutModal onClose={() => setIsModalOpen(false)} />}
+      {isModalOpen && <AboutModal onClose={handleModalClose} />}
     </div>
   );
 };
