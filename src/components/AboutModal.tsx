@@ -7,6 +7,7 @@ interface AboutModalProps {
 
 const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const firstFocusableElementRef = useRef<HTMLButtonElement>(null);
 
   const handleClickOutside = (event: MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -14,10 +15,40 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
     }
   };
 
+  const handleTabKey = (event: KeyboardEvent) => {
+    if (event.key === 'Tab') {
+      const focusableElements = modalRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusableElements) return;
+
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (event.shiftKey) {
+        // Shift + Tab
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        // Tab
+        if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+  };
+
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleTabKey);
+    firstFocusableElementRef.current?.focus();
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleTabKey);
     };
   }, []);
 
@@ -28,8 +59,13 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
         className='bg-white rounded-md overflow-hidden shadow-lg w-full max-w-4xl mx-4 md:mx-auto max-h-[80vh] md:max-h-[90vh] lg:max-h-[100vh] md:p-4'
       >
         <div className='flex justify-end px-4 py-2'>
-          <button className='text-gray-700 hover:text-gray-900' onClick={onClose}>
-            <span className='text-2xl'>&times;</span>
+          <button
+            ref={firstFocusableElementRef}
+            className='bg-[#1E79C8] text-white py-2 px-4 rounded-full hover:bg-[#3892E1]'
+            onClick={onClose}
+          >
+            <span className='text-xl'>&times;</span>
+            <span className=''> Close Pop Up</span>
           </button>
         </div>
         <div className='px-6 pt-2 pb-6 overflow-y-auto max-h-[80vh]'>

@@ -5,6 +5,7 @@ import { geographyFilterData, typeFilterData, FilterOption } from '../static/fil
 import resources from '../static/resources.json';
 import mapboxgl from 'mapbox-gl';
 import { Position } from 'geojson';
+import Pagination from './Pagination';
 
 mapboxgl.accessToken =
   'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
@@ -16,9 +17,10 @@ interface County {
 
 interface ResourceFinderProps {
   selectedView: string;
+  isModalOpen: boolean;
 }
 
-const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
+const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOpen }) => {
   const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [selectedType, setSelectedType] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,6 +49,19 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isModalOpen) {
+        setSelectedType([]);
+        setCurrentPage(1); // Reset to first page
+      }
+    };
+    window.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      window.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isModalOpen]);
 
   useEffect(() => {
     if (selectedView === 'map' && !mapInstance.current && mapContainer.current) {
@@ -134,18 +149,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
                     'County',
                     countyName,
                   ]);
-                  if (popupRef.current) {
-                    popupRef.current.remove();
-                  }
-                  popupRef.current = new mapboxgl.Popup({
-                    closeButton: false,
-                    closeOnClick: false,
-                  })
-                    .setLngLat(e.lngLat)
-                    .setHTML(
-                      `<div style="color: white; background: #1E79C8; padding: 5px;">${countyName}</div>`,
-                    )
-                    .addTo(mapInstance.current!);
                 }
               }
             }
@@ -220,6 +223,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       return county;
     });
     setShowCountyOptions(false);
+    setCurrentPage(1); // Reset to first page
+    scrollToTop(); // Scroll to top
   };
 
   const toggleTypeSelection = (type: string) => {
@@ -228,6 +233,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
         ? prevSelectedTypes.filter((t) => t !== type)
         : [...prevSelectedTypes, type],
     );
+    setCurrentPage(1); // Reset to first page
+    scrollToTop(); // Scroll to top
   };
 
   const filteredResources = resources
@@ -253,6 +260,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       return countyMatch && typeMatch && searchMatch;
     });
 
+  const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE);
   const paginatedResources = filteredResources.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
@@ -260,12 +268,16 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page
+    scrollToTop(); // Scroll to top
   };
 
   const handleCountyQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCountyQuery(e.target.value);
     setShowCountyOptions(true);
     setHighlightedCountyIndex(-1);
+    setCurrentPage(1); // Reset to first page
+    scrollToTop(); // Scroll to top
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -298,6 +310,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [dropdownRef]);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    scrollToTop(); // Scroll to top
+  };
 
   return (
     <div className='w-full md:px-28 2xl:px-40 py-4'>
@@ -394,23 +415,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
               <AssetListItem key={index} resource={resource} />
             ))}
           </div>
-          <div className='flex justify-center items-center my-4'>
-            <button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
-            >
-              Previous
-            </button>
-            <span>{currentPage}</span>
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === Math.ceil(filteredResources.length / ITEMS_PER_PAGE)}
-              className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
-            >
-              Next
-            </button>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       ) : (
         <div className='flex flex-col md:flex-row'>
@@ -427,23 +436,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView }) => {
                 <AssetListItem key={index} resource={resource} />
               ))}
             </div>
-            <div className='flex justify-center items-center my-4'>
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
-              >
-                Previous
-              </button>
-              <span>{currentPage}</span>
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === Math.ceil(filteredResources.length / ITEMS_PER_PAGE)}
-                className='px-4 py-2 mx-2 bg-gray-200 rounded-md cursor-pointer'
-              >
-                Next
-              </button>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
         </div>
       )}
