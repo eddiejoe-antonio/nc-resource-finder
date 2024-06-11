@@ -13,17 +13,10 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
     }
   };
 
-  // In your component:
-  <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
-    <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-    {formatType(resource.Type)}
-  </div>;
-
   return (
     <div className='flex flex-col font-inter border bg-white drop-shadow-md border-[#0E3052] overflow-hidden transition-all ease-in-out duration-300 rounded-md '>
       <div className=' text-black bg-[#EEF7FF] p-4'>
         <h3 className='text-md font-bold'>{resource.Name}</h3>
-        {/* <hr className='mt-3' /> */}
       </div>
       <div className='px-4 pt-4'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
@@ -34,7 +27,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
       <div className='px-4'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
           <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          {formatType(resource.Type)}
+          {formatType(resource.Primary_Filter ?? '')}
         </div>
       </div>
       <div className='px-4 pb-6'>
@@ -62,8 +55,6 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
           <div className='text-sm text-[#0E3052] mt-4'>
             <h3 className='my-2 font-semibold'>Description</h3>
             <p>{resource.Servicesprovided}</p>
-            {/* <h3 className='my-2 font-semibold'>Organization Type</h3>
-            <p>{resource.OrganizationTypeBroadsector}</p> */}
           </div>
         )}
       </div>

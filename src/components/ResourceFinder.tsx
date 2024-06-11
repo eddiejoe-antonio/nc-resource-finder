@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CheckIcon, MapIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import AssetListItem from './AssetListItem';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
-import resources from '../static/resources.json';
+import resources from '../static/updated_resources.json';
 import mapboxgl from 'mapbox-gl';
 import { Position } from 'geojson';
 import Pagination from './Pagination';
@@ -244,7 +244,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const filteredResources = resources
     .map((resource) => ({
       ...resource,
-      Type: Array.isArray(resource.Type) ? resource.Type : [resource.Type || ''],
+      Type: Array.isArray(resource.Primary_Filter)
+        ? resource.Primary_Filter
+        : [resource.Primary_Filter || ''],
     }))
     .filter((resource) => {
       const countyMatch = !selectedCounty || resource.Geography === (selectedCounty?.value || '');
