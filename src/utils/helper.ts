@@ -12,6 +12,7 @@ interface Resource {
   Other: number;
   TotalServices: number;
   Type: string[]; // Assuming Type is an array of strings
+  Primary_Type: string;
   ServicesProvided: string; // Assuming this is a string description
   // Add more specific properties as known and needed
 }
