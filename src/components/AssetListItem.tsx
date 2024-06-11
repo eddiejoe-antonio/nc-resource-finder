@@ -16,7 +16,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   // In your component:
   <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
     <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-    {formatType(resource.Type)}
+    {formatType(resource.Primary_Filter)}
   </div>;
 
   return (
@@ -34,7 +34,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
       <div className='px-4'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
           <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          {formatType(resource.Type)}
+          {formatType(resource.Primary_Filter)}
         </div>
       </div>
       <div className='px-4 pb-6'>

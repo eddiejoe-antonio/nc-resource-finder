@@ -1,12 +1,4 @@
-import {
-  CheckIcon,
-  WifiIcon,
-  UserGroupIcon,
-  DeviceTabletIcon,
-  AdjustmentsVerticalIcon,
-  BanknotesIcon,
-  ChatBubbleOvalLeftIcon,
-} from '@heroicons/react/24/outline';
+import { CheckIcon, WifiIcon, DeviceTabletIcon } from '@heroicons/react/24/outline';
 
 export interface FilterData {
   id: string;
@@ -25,57 +17,29 @@ export interface FilterOption {
 
 export const typeFilterData: FilterData = {
   id: 'type',
-  name: 'Type',
+  name: 'Primary_Filter',
   explanation: 'Select one or more counties to see resources available in those areas.',
   options: [
     {
-      value: 'Device Access',
-      label: 'Device Access',
+      value: 'Find Digital Skills Help and Classes',
+      label: 'Find Digital Skills Help and Classes',
       checked: false,
-      type: 'Type',
+      type: 'Primary_Filter',
       icon: DeviceTabletIcon,
     },
     {
-      value: 'Digital Skills',
-      label: 'Digital Skills',
+      value: 'Get a computer or device',
+      label: 'Get a computer or device',
       checked: false,
-      type: 'Type',
+      type: 'Primary_Filter',
       icon: CheckIcon,
     },
     {
-      value: 'Public Device & Internet Access',
-      label: 'Public Device & Internet Access',
+      value: 'Find a public computer',
+      label: 'Find a public computer',
       checked: false,
-      type: 'Type',
+      type: 'Primary_Filter',
       icon: WifiIcon,
-    },
-    {
-      value: 'Virtual Support',
-      label: 'Virtual Support',
-      checked: false,
-      type: 'Type',
-      icon: ChatBubbleOvalLeftIcon,
-    },
-    {
-      value: 'Digital Navigation',
-      label: 'Digital Navigation',
-      checked: false,
-      type: 'Type',
-      icon: AdjustmentsVerticalIcon,
-    },
-    {
-      value: 'Digital Skills & Technical Support',
-      label: 'Digital Skills & Technical Support',
-      checked: false,
-      type: 'Type',
-      icon: UserGroupIcon,
-    },
-    {
-      value: 'Digital Inclusion Funding',
-      label: 'Digital Inclusion Funding',
-      checked: false,
-      type: 'Type',
-      icon: BanknotesIcon,
     },
   ],
 };
