@@ -52,6 +52,13 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
     };
   }, []);
 
+  const handleContributeClick = () => {
+    window.open(
+      'https://ncsu.yul1.qualtrics.com/jfe/preview/previewId/e641bfe4-416a-4569-adcc-972b301fc7c1/SV_cHfEQwInm8UprWC?Q_CHL=preview&Q_SurveyVersionID=current',
+      '_blank',
+    );
+  };
+
   return (
     <div className='fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50'>
       <div
@@ -91,7 +98,10 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
                   and current. Please click on the form below to submit a correction or update to
                   any information you see on this site.
                 </p>
-                <button className='bg-[#1E79C8] text-white py-2 px-4 rounded-full mt-4 hover:bg-[#3892E1]'>
+                <button
+                  className='bg-[#1E79C8] text-white py-2 px-4 rounded-full mt-4 hover:bg-[#3892E1]'
+                  onClick={handleContributeClick}
+                >
                   Contribute to the Dataset
                 </button>
               </section>
