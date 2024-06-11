@@ -25,14 +25,14 @@ export const typeFilterData: FilterData = {
       label: 'Find Digital Skills Help and Classes',
       checked: false,
       type: 'Primary_Filter',
-      icon: DeviceTabletIcon,
+      icon: CheckIcon,
     },
     {
       value: 'Get a computer or device',
       label: 'Get a computer or device',
       checked: false,
       type: 'Primary_Filter',
-      icon: CheckIcon,
+      icon: DeviceTabletIcon,
     },
     {
       value: 'Find a public computer',
