@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CheckIcon, MapIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import AssetListItem from './AssetListItem';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
-import resources from '../static/updated_resources.json';
 import mapboxgl from 'mapbox-gl';
 import { Position } from 'geojson';
 import Pagination from './Pagination';
+import { fetchResources } from '../utils/apiService';
+import { Resource } from '../types/resourceFinderTypes'; // Import the Resource type
 
 mapboxgl.accessToken =
   'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
@@ -21,6 +22,7 @@ interface ResourceFinderProps {
 }
 
 const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOpen }) => {
+  const [resources, setResources] = useState<Resource[]>([]); // State for resources
   const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [selectedType, setSelectedType] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,6 +42,18 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
   );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchResources();
+        setResources(data); // Update state with fetched data
+      } catch (error) {
+        console.error('Error fetching resources:', error);
+      }
+    };
+    fetchData();
+  }, []); // Empty dependency array means this effect runs once on mount
 
   useEffect(() => {
     const handleResize = () => {
@@ -256,9 +270,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         ? ['Name', 'Description', 'Type', 'Geography'].some((field) =>
             field === 'Type'
               ? resource.Type.some((type) => type.toLowerCase().includes(searchQuery.toLowerCase()))
-              : resource[field as keyof typeof resource] &&
-                typeof resource[field as keyof typeof resource] === 'string' &&
-                (resource[field as keyof typeof resource] as string)
+              : resource[field as keyof Resource] &&
+                typeof resource[field as keyof Resource] === 'string' &&
+                (resource[field as keyof Resource] as string)
                   .toLowerCase()
                   .includes(searchQuery.toLowerCase()),
           )
