@@ -25,3 +25,20 @@ input {
     height: 60vh; /* Ensure the height is appropriate for desktop devices */
   }
 }
+
+/* global.css */
+*:focus {
+  outline: 2px solid black;
+  transition: outline-color 0.2s ease-in-out;
+}
+
+/* Customize focus for buttons */
+button:focus {
+  outline: 2px solid black;
+}
+
+/* Customize focus for input fields */
+input:focus,
+textarea:focus {
+  outline: 2px solid black;
+}

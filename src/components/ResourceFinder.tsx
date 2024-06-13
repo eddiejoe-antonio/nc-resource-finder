@@ -347,7 +347,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       <hr className='border-t-1 border-black' />
       <div className='flex flex-col lg:flex-row lg:items-start lg:space-x-4 py-4 px-2 bg-[#EEF7FF]'>
         <div className='relative flex-1 mb-4 lg:mb-0 lg:w-1/2'>
-          <label htmlFor='keyword-input' className='hidden text-sm font-medium text-gray-700'>
+          <label htmlFor='keyword-input' className='sr-only'>
             Keyword Search
           </label>
           <span className='absolute inset-y-0 left-2 flex items-center'>
@@ -363,7 +363,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           />
         </div>
         <div className='relative flex-1 mb-0 md:mb-4 lg:mb-0 lg:w-1/2' ref={dropdownRef}>
-          <label htmlFor='county-input' className='hidden text-sm font-medium text-gray-700'>
+          <label htmlFor='county-input' className='sr-only'>
             County Selector
           </label>
           <span className='absolute inset-y-0 left-2 flex items-center'>
@@ -412,23 +412,31 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           )}
         </div>
       </div>
-      <div className='flex flex-wrap py-2 justify-start bg-[#EEF7FF]'>
-        {typeFilterData.options.map((option: FilterOption) => (
-          <button
-            aria-pressed='false'
-            key={option.value}
-            onClick={() => toggleTypeSelection(option.value)}
-            className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 rounded-full shadow-lg transition-colors whitespace-nowrap ${
-              selectedType.includes(option.value)
-                ? 'bg-[#092940] text-white'
-                : 'bg-[#1E79C8] text-white md:hover:bg-[#3892E1]'
-            } `}
-          >
-            {option.icon && <option.icon className='w-6 h-6 mr-2' />}
-            {option.label}
-          </button>
-        ))}
+      <div className='flex flex-col md:flex-row flex-wrap py-2 justify-start bg-[#EEF7FF]'>
+        <div className='flex flex-wrap'>
+          {typeFilterData.options.map((option: FilterOption) => (
+            <button
+              aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
+              key={option.value}
+              onClick={() => toggleTypeSelection(option.value)}
+              className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 rounded-full shadow-lg transition-colors whitespace-nowrap ${
+                selectedType.includes(option.value)
+                  ? 'bg-[#092940] text-white'
+                  : 'bg-[#1E79C8] text-white md:hover:bg-[#3892E1]'
+              } `}
+            >
+              {option.icon && <option.icon className='w-6 h-6 mr-2' />}
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <div className='py-2 md:ml-4'>
+          <p className='ml-1'>
+            Showing <strong>{filteredResources.length}</strong> results
+          </p>
+        </div>
       </div>
+
       <hr className='border-t-1 border-black' />
       {selectedView === 'list' ? (
         <div>
