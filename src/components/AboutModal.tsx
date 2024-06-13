@@ -67,9 +67,10 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
             ref={firstFocusableElementRef}
             className='bg-[#1E79C8] text-white py-2 px-4 rounded-full hover:bg-[#3892E1]'
             onClick={onClose}
+            aria-label='Close modal'
           >
             <span className='text-xl'>&times;</span>
-            <span className=''> Close Pop Up</span>
+            <span> Close Pop Up</span>
           </button>
         </div>
         <div className='px-6 pt-2 pb-6 overflow-y-auto max-h-[80vh]'>

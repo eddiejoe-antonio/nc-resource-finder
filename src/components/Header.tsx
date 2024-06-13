@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { QuestionMarkCircleIcon, MapPinIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import AboutModal from './AboutModal';
@@ -12,6 +12,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsModalOpen }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpenLocal] = useState(false);
+  const learnMoreButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleNavigate = (view: string) => {
     setSelectedView(view);
@@ -26,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
   const handleModalClose = () => {
     setIsModalOpenLocal(false);
     setIsModalOpen(false);
+    learnMoreButtonRef.current?.focus();
   };
 
   const handleEscapeKey = (event: KeyboardEvent) => {
@@ -56,7 +58,10 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
         </div>
         <div className='flex justify-start items-center col-start-10 col-span-2 my-4 md:my-0 md:mt-3'>
           <button
-            aria-label='Open modal'
+            ref={learnMoreButtonRef}
+            aria-modal='true'
+            role='alertdialog'
+            aria-label='Learn more about the North Carolina Resource Finder'
             onClick={handleAboutClick}
             className={`flex items-center px-4 py-2 rounded-full shadow-md cursor-pointer transition ease-in-out duration-300 ${
               isModalOpen

@@ -34,72 +34,77 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
   };
 
   const handlePageChange = (page: number) => {
-    onPageChange(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof page === 'number') {
+      onPageChange(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
-    <div className='flex justify-center items-center my-4 overflow-x-auto'>
-      <label htmlFor='firstpage-button' className='hidden text-sm font-medium text-gray-700'>
-        First Page Button
-      </label>
-      <label htmlFor='lastpage-button' className='hidden text-sm font-medium text-gray-700'>
-        Last Page Button
-      </label>
-      <label htmlFor='previouspage-button' className='hidden text-sm font-medium text-gray-700'>
-        Previous Page Button
-      </label>
-      <label htmlFor='pagenumber' className='hidden text-sm font-medium text-gray-700'>
-        Page Number
-      </label>
-      <label htmlFor='nextpage-button' className='hidden text-sm font-medium text-gray-700'>
-        Next Page Button
-      </label>
-      <button
-        id='firstpage-button'
-        onClick={() => handlePageChange(1)}
-        disabled={currentPage === 1}
-        className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
-      >
-        {'<<'}
-      </button>
-      <button
-        id='previouspage-button'
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
-      >
-        {'<'}
-      </button>
-      {getPageNumbers().map((page, index) => (
-        <button
-          id='pagenumber'
-          key={index}
-          onClick={() => handlePageChange(page as number)}
-          className={`px-2 py-1 mx-1 rounded-md ${
-            page === currentPage ? 'bg-[#1E79C8] text-white' : 'bg-gray-200 md:hover:bg-[#dedede]'
-          }`}
-        >
-          {page}
-        </button>
-      ))}
-      <button
-        id='nextpage-button'
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
-      >
-        {'>'}
-      </button>
-      <button
-        id='lastpage-button'
-        onClick={() => handlePageChange(totalPages)}
-        disabled={currentPage === totalPages}
-        className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
-      >
-        {'>>'}
-      </button>
-    </div>
+    <nav aria-label='pagination' className='flex justify-center items-center my-4 overflow-x-auto'>
+      <ul className='pagination__list flex'>
+        <li>
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+            className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
+            aria-label='First page'
+          >
+            {'<<'}
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
+            aria-label='Previous page'
+          >
+            {'<'}
+          </button>
+        </li>
+        {getPageNumbers().map((page, index) => (
+          <li key={index}>
+            {typeof page === 'number' ? (
+              <button
+                onClick={() => handlePageChange(page)}
+                className={`px-2 py-1 mx-1 rounded-md ${
+                  page === currentPage
+                    ? 'bg-[#1E79C8] text-white'
+                    : 'bg-gray-200 md:hover:bg-[#dedede]'
+                }`}
+                aria-label={`Page ${page}`}
+                aria-current={page === currentPage ? 'page' : undefined}
+              >
+                {page}
+              </button>
+            ) : (
+              <span className='px-2 py-1 mx-1'>...</span>
+            )}
+          </li>
+        ))}
+        <li>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
+            aria-label='Next page'
+          >
+            {'>'}
+          </button>
+        </li>
+        <li>
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
+            aria-label='Last page'
+          >
+            {'>>'}
+          </button>
+        </li>
+      </ul>
+    </nav>
   );
 };
 
