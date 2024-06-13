@@ -82,7 +82,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     if (selectedView === 'map' && !mapInstance.current && mapContainer.current) {
       mapInstance.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/eddiejoeantonio/clwtppqme058301ql266g5top',
+        style: 'mapbox://styles/eddiejoeantonio/clxdqaemw007001qj6xirfmxv',
         center: [-79, 35],
         zoom: 5.5,
         maxBounds: [
@@ -99,30 +99,45 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             url: 'mapbox://eddiejoeantonio.5kdb3ae2',
           });
 
-          mapInstance.current.addLayer({
-            id: 'counties-layer',
-            type: 'fill',
-            source: 'counties',
-            'source-layer': 'ncgeo',
-            paint: {
-              'fill-color': '#acacac',
-              'fill-opacity': 0.9,
-              'fill-outline-color': 'white',
-            },
-          });
+          const layers = mapInstance.current.getStyle().layers;
+          let firstPlaceLabelId;
+          for (const layer of layers) {
+            if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
+              firstPlaceLabelId = layer.id;
+              break;
+            }
+          }
 
-          mapInstance.current.addLayer({
-            id: 'counties-layer-hover',
-            type: 'fill',
-            source: 'counties',
-            'source-layer': 'ncgeo',
-            paint: {
-              'fill-color': '#888',
-              'fill-outline-color': 'white',
-              'fill-opacity': 0.7,
+          mapInstance.current.addLayer(
+            {
+              id: 'counties-layer',
+              type: 'fill',
+              source: 'counties',
+              'source-layer': 'ncgeo',
+              paint: {
+                'fill-color': '#acacac',
+                'fill-opacity': 0.9,
+                'fill-outline-color': 'white',
+              },
             },
-            filter: ['==', 'County', ''],
-          });
+            firstPlaceLabelId,
+          );
+
+          mapInstance.current.addLayer(
+            {
+              id: 'counties-layer-hover',
+              type: 'fill',
+              source: 'counties',
+              'source-layer': 'ncgeo',
+              paint: {
+                'fill-color': '#888',
+                'fill-outline-color': 'white',
+                'fill-opacity': 0.7,
+              },
+              filter: ['==', 'County', ''],
+            },
+            firstPlaceLabelId,
+          );
 
           mapInstance.current.on('click', 'counties-layer', (e) => {
             if (e.features && e.features.length > 0) {
@@ -342,6 +357,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     scrollToTop(); // Scroll to top
   };
 
+  const currentGeography = selectedCounty ? selectedCounty.label : 'North Carolina';
+  const currentType =
+    selectedType.length > 0
+      ? selectedType
+          .map((type) => typeFilterData.options.find((option) => option.value === type)?.label)
+          .join(', ')
+      : 'with technical issues';
+
   return (
     <div className='w-full md:px-28 2xl:px-40 py-4'>
       <hr className='border-t-1 border-black' />
@@ -419,10 +442,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
               key={option.value}
               onClick={() => toggleTypeSelection(option.value)}
-              className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 rounded-full shadow-lg transition-colors whitespace-nowrap ${
+              className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 md:mb-1 rounded-full shadow-lg transition-colors whitespace-nowrap ${
                 selectedType.includes(option.value)
-                  ? 'bg-[#092940] text-white'
-                  : 'bg-[#1E79C8] text-white md:hover:bg-[#3892E1]'
+                  ? 'bg-[#1E79C8] text-white'
+                  : 'bg-[#092940] text-white md:hover:bg-[#3892E1]'
               } `}
             >
               {option.icon && <option.icon className='w-6 h-6 mr-2' />}
@@ -430,13 +453,19 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             </button>
           ))}
         </div>
-        <div className='py-2 md:ml-4'>
-          <p className='ml-1'>
-            Showing <strong>{filteredResources.length}</strong> results
-          </p>
-        </div>
       </div>
-
+      <div className='py-2 pb-3 bg-[#EEF7FF]'>
+        <p className='ml-1 md:ml-2'>
+          Showing <strong>{filteredResources.length}</strong> results. You are viewing resources in{' '}
+          <strong>{currentGeography}</strong>
+          {selectedType.length > 0 && (
+            <>
+              {' '}
+              that help you <strong>{currentType}</strong>
+            </>
+          )}
+        </p>
+      </div>
       <hr className='border-t-1 border-black' />
       {selectedView === 'list' ? (
         <div>
