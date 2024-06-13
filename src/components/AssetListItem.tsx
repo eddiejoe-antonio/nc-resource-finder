@@ -13,6 +13,16 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
     }
   };
 
+  const formatWebsite = (url: string | undefined | null) => {
+    if (!url) {
+      return '';
+    }
+    if (!url.startsWith('https://') && !url.startsWith('http://')) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   return (
     <div className='flex flex-col font-inter border bg-white drop-shadow-md border-[#0E3052] overflow-hidden transition-all ease-in-out duration-300 rounded-md '>
       <div className=' text-black bg-[#EEF7FF] p-4'>
@@ -33,21 +43,23 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
       <div className='px-4 pb-6'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
           <LinkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          <a
-            href={resource.Website}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
-          >
-            {resource.Website}
-          </a>
+          {resource.Website && (
+            <a
+              href={formatWebsite(resource.Website)}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
+            >
+              {resource.Website}
+            </a>
+          )}
         </div>
       </div>
       <div className='px-4 pb-4'>
         <button
-          aria-label={`Learn more about ${resource.Name}`}
+          aria-label='Toggle to show and hide additional information. '
           onClick={() => setShowMore(!showMore)}
-          className='bg-[#1E79C8] hover:bg-[#3892E1] text-white text-sm cursor-pointer px-12 py-2 rounded-full transition-colors duration-300 flex items-center justify-center gap-2 shadow'
+          className='bg-[#092940] hover:bg-[#3892E1] text-white text-sm cursor-pointer px-12 py-2 rounded-full transition-colors duration-300 flex items-center justify-center gap-2 shadow'
         >
           {showMore ? <>Collapse</> : <>Learn More</>}
         </button>

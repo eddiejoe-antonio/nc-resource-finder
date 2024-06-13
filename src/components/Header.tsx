@@ -87,8 +87,8 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
           <button
             className={`flex-grow flex items-center justify-center shadow-md gap-2 py-1 md:h-14 rounded-l-lg ${
               selectedView === 'map'
-                ? 'bg-[#092940] text-white'
-                : 'bg-[#1E79C8] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
+                ? 'bg-[#1E79C8] text-white'
+                : 'bg-[#092940] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
             }`}
             onClick={() => handleNavigate('map')}
           >
@@ -98,8 +98,8 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
           <button
             className={`flex-grow flex items-center justify-center shadow-md gap-2 py-1 md:h-14 rounded-r-lg ${
               selectedView === 'list'
-                ? 'bg-[#092940] text-white'
-                : 'bg-[#1E79C8] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
+                ? 'bg-[#1E79C8] text-white'
+                : 'bg-[#092940] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
             }`}
             onClick={() => handleNavigate('list')}
           >
