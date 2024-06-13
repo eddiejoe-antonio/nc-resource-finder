@@ -53,10 +53,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
   }, []);
 
   const handleContributeClick = () => {
-    window.open(
-      'https://ncsu.yul1.qualtrics.com/jfe/preview/previewId/e641bfe4-416a-4569-adcc-972b301fc7c1/SV_cHfEQwInm8UprWC?Q_CHL=preview&Q_SurveyVersionID=current',
-      '_blank',
-    );
+    window.open('https://ncsu.qualtrics.com/jfe/form/SV_cHfEQwInm8UprWC', '_blank');
   };
 
   return (
