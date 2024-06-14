@@ -41,6 +41,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
   const assetSectionRef = useRef<HTMLDivElement>(null);
+  const srCountyRef = useRef<HTMLDivElement>(null); // Ref for screen reader announcement
 
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
@@ -103,6 +104,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       // Handle zoom interaction to avoid selecting a county
       const zoomInButton = mapContainer.current.querySelector('.mapboxgl-ctrl-zoom-in');
       const zoomOutButton = mapContainer.current.querySelector('.mapboxgl-ctrl-zoom-out');
+      const compassButton = mapContainer.current.querySelector('.mapboxgl-ctrl-compass');
 
       if (zoomInButton) {
         zoomInButton.addEventListener('keydown', (e) => {
@@ -118,6 +120,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           if ((e as KeyboardEvent).key === 'Enter') {
             e.stopPropagation();
             mapInstance.current?.zoomOut();
+          }
+        });
+      }
+
+      if (compassButton) {
+        compassButton.addEventListener('keydown', (e) => {
+          if ((e as KeyboardEvent).key === 'Enter') {
+            e.stopPropagation();
+            mapInstance.current?.zoomIn();
           }
         });
       }
@@ -433,6 +444,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           });
         }
       }
+
+      if (currentCountyIndex >= 0 && srCountyRef.current) {
+        srCountyRef.current.innerText = `Focused on ${countyList[currentCountyIndex].label} County`;
+      }
     }
   };
 
@@ -588,6 +603,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             onBlur={() => setIsMapFocused(false)}
             aria-label='Map of counties'
           />
+          <div ref={srCountyRef} className='sr-only' aria-live='assertive'></div>
           <div
             ref={assetSectionRef}
             className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-2 md:py-0 md:p-4 w-full'
