@@ -3,6 +3,7 @@ import { CheckIcon, MapIcon, MagnifyingGlassIcon } from '@heroicons/react/24/out
 import AssetListItem from './AssetListItem';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
 import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { Position } from 'geojson';
 import Pagination from './Pagination';
 import { fetchResources } from '../utils/apiService';
@@ -37,7 +38,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
-  const popupRef = useRef<mapboxgl.Popup | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
   const assetSectionRef = useRef<HTMLDivElement>(null);
@@ -88,6 +88,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         style: 'mapbox://styles/eddiejoeantonio/clxdqaemw007001qj6xirfmxv',
         center: [-79, 35],
         zoom: 5.5,
+        maxZoom: 20,
         maxBounds: [
           [-90, 30],
           [-70, 40],
@@ -98,6 +99,28 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       // Add navigation controls with higher z-index
       const navControl = new mapboxgl.NavigationControl();
       mapInstance.current.addControl(navControl, 'top-right');
+
+      // Handle zoom interaction to avoid selecting a county
+      const zoomInButton = mapContainer.current.querySelector('.mapboxgl-ctrl-zoom-in');
+      const zoomOutButton = mapContainer.current.querySelector('.mapboxgl-ctrl-zoom-out');
+
+      if (zoomInButton) {
+        zoomInButton.addEventListener('keydown', (e) => {
+          if ((e as KeyboardEvent).key === 'Enter') {
+            e.stopPropagation();
+            mapInstance.current?.zoomIn();
+          }
+        });
+      }
+
+      if (zoomOutButton) {
+        zoomOutButton.addEventListener('keydown', (e) => {
+          if ((e as KeyboardEvent).key === 'Enter') {
+            e.stopPropagation();
+            mapInstance.current?.zoomOut();
+          }
+        });
+      }
 
       mapInstance.current.on('load', () => {
         if (mapInstance.current) {
@@ -169,9 +192,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             if (!isMobile) {
               mapInstance.current!.getCanvas().style.cursor = '';
               mapInstance.current!.setFilter('counties-layer-hover', ['==', 'County', '']);
-              if (popupRef.current) {
-                popupRef.current.remove();
-              }
             }
           });
 
@@ -200,7 +220,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
 
           // Make the map focusable
           mapInstance.current.getContainer().setAttribute('tabindex', '0');
-          mapInstance.current.getContainer().setAttribute('role', 'application');
         }
       });
     }
@@ -209,10 +228,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
-      }
-      if (popupRef.current) {
-        popupRef.current.remove();
-        popupRef.current = null;
       }
     };
   }, [selectedView, isMobile]);

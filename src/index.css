@@ -12,6 +12,7 @@ input {
 
 .map-container {
   position: relative;
+  z-index: 0;
 }
 
 @media (max-width: 768px) {
@@ -43,7 +44,7 @@ textarea:focus {
   outline: 2px solid black;
 }
 
-.mapboxgl-ctrl {
+.mapboxgl-control-container {
   z-index: 1000 !important;
   position: absolute !important;
   top: 10px !important;
