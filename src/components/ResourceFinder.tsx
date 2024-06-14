@@ -95,8 +95,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         attributionControl: false,
       });
 
-      // Add navigation controls
-      mapInstance.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      // Add navigation controls with higher z-index
+      const navControl = new mapboxgl.NavigationControl();
+      mapInstance.current.addControl(navControl, 'top-right');
 
       mapInstance.current.on('load', () => {
         if (mapInstance.current) {

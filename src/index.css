@@ -42,3 +42,10 @@ input:focus,
 textarea:focus {
   outline: 2px solid black;
 }
+
+.mapboxgl-ctrl {
+  z-index: 1000 !important;
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+}
