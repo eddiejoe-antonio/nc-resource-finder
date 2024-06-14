@@ -22,7 +22,7 @@ interface ResourceFinderProps {
 }
 
 const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOpen }) => {
-  const [resources, setResources] = useState<Resource[]>([]); // State for resources
+  const [resources, setResources] = useState<Resource[]>([]);
   const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [selectedType, setSelectedType] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +31,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const [showCountyOptions, setShowCountyOptions] = useState<boolean>(false);
   const [highlightedCountyIndex, setHighlightedCountyIndex] = useState<number>(-1);
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
+  const [isMapFocused, setIsMapFocused] = useState<boolean>(false);
+  const [countyList, setCountyList] = useState<County[]>([]);
+  const [currentCountyIndex, setCurrentCountyIndex] = useState<number>(-1);
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
@@ -47,13 +50,13 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     const fetchData = async () => {
       try {
         const data = await fetchResources();
-        setResources(data); // Update state with fetched data
+        setResources(data);
       } catch (error) {
         console.error('Error fetching resources:', error);
       }
     };
     fetchData();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -69,7 +72,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !isModalOpen) {
         setSelectedType([]);
-        setCurrentPage(1); // Reset to first page
+        setCurrentPage(1);
       }
     };
     window.addEventListener('keydown', handleEscapeKey);
@@ -91,6 +94,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         ],
         attributionControl: false,
       });
+
+      // Add navigation controls with higher z-index
+      const navControl = new mapboxgl.NavigationControl();
+      mapInstance.current.addControl(navControl, 'top-right');
 
       mapInstance.current.on('load', () => {
         if (mapInstance.current) {
@@ -183,6 +190,17 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               }
             }
           });
+
+          // Populate the county list for keyboard navigation
+          const counties = geographyFilterData.options.map((option) => ({
+            value: option.value,
+            label: option.label,
+          }));
+          setCountyList(counties);
+
+          // Make the map focusable
+          mapInstance.current.getContainer().setAttribute('tabindex', '0');
+          mapInstance.current.getContainer().setAttribute('role', 'application');
         }
       });
     }
@@ -244,20 +262,27 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   }, [countyQuery]);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page when view changes
+    setCurrentPage(1);
   }, [selectedView]);
 
   const handleCountySelection = (county: County) => {
     setSelectedCounty((prevCounty) => {
       if (prevCounty && prevCounty.value === county.value) {
         setCountyQuery('');
+        // Reset to the overall boundaries
+        if (mapInstance.current) {
+          mapInstance.current.flyTo({
+            center: [-79.0193, 35.7596],
+            zoom: 6,
+          });
+        }
         return null;
       }
       setCountyQuery(county.label);
       return county;
     });
     setShowCountyOptions(false);
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1);
   };
 
   const toggleTypeSelection = (type: string) => {
@@ -266,8 +291,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         ? prevSelectedTypes.filter((t) => t !== type)
         : [...prevSelectedTypes, type],
     );
-    setCurrentPage(1); // Reset to first page
-    scrollToTop(); // Scroll to top
+    setCurrentPage(1);
+    scrollToTop();
   };
 
   const filteredResources = resources
@@ -303,16 +328,16 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset to first page
-    scrollToTop(); // Scroll to top
+    setCurrentPage(1);
+    scrollToTop();
   };
 
   const handleCountyQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCountyQuery(e.target.value);
     setShowCountyOptions(true);
     setHighlightedCountyIndex(-1);
-    setCurrentPage(1); // Reset to first page
-    scrollToTop(); // Scroll to top
+    setCurrentPage(1);
+    scrollToTop();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -346,6 +371,63 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     };
   }, [dropdownRef]);
 
+  const handleMapKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isMapFocused) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        setCurrentCountyIndex((prevIndex) =>
+          prevIndex < countyList.length - 1 ? prevIndex + 1 : 0,
+        );
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        setCurrentCountyIndex((prevIndex) =>
+          prevIndex > 0 ? prevIndex - 1 : countyList.length - 1,
+        );
+      } else if (e.key === 'Enter' && currentCountyIndex >= 0) {
+        const countyName = countyList[currentCountyIndex].value;
+        handleCountySelection({ value: countyName, label: countyName });
+
+        // Zoom to the selected county
+        if (mapInstance.current) {
+          const features = mapInstance.current.querySourceFeatures('counties', {
+            sourceLayer: 'ncgeo',
+            filter: ['==', 'County', countyName],
+          });
+
+          if (features.length > 0) {
+            const bounds = new mapboxgl.LngLatBounds();
+            features.forEach((feature) => {
+              if (feature.geometry.type === 'Polygon') {
+                (feature.geometry.coordinates[0] as Position[]).forEach((coord) => {
+                  bounds.extend(coord as mapboxgl.LngLatLike);
+                });
+              }
+            });
+
+            if (!bounds.isEmpty()) {
+              mapInstance.current.fitBounds(bounds, { padding: 20 });
+            }
+          }
+        }
+      } else if (e.key === 'Escape') {
+        setIsMapFocused(false);
+        setCurrentCountyIndex(-1);
+        // Reset to the overall boundaries
+        if (mapInstance.current) {
+          mapInstance.current.flyTo({
+            center: [-79.0193, 35.7596],
+            zoom: 6,
+          });
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (currentCountyIndex >= 0 && mapInstance.current) {
+      const selectedCounty = countyList[currentCountyIndex];
+      mapInstance.current.setFilter('counties-layer-hover', ['==', 'County', selectedCounty.value]);
+    }
+  }, [currentCountyIndex]);
+
   const scrollToTop = () => {
     if (assetSectionRef.current) {
       assetSectionRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -354,10 +436,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    scrollToTop(); // Scroll to top
+    scrollToTop();
   };
 
-  const currentGeography = selectedCounty ? selectedCounty.label : 'North Carolina';
+  const currentGeography = selectedCounty ? `${selectedCounty.label} County` : 'North Carolina';
   const currentType =
     selectedType.length > 0
       ? selectedType
@@ -485,6 +567,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           <div
             ref={mapContainer}
             className='map-container h-[50vh] md:h-[60vh] lg:h-[80vh] w-full md:w-[55vw] md:flex-2'
+            tabIndex={0}
+            onKeyDown={handleMapKeyDown}
+            onFocus={() => setIsMapFocused(true)}
+            onBlur={() => setIsMapFocused(false)}
+            aria-label='Map of counties'
           />
           <div
             ref={assetSectionRef}
