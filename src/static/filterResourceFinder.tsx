@@ -1,4 +1,4 @@
-import { CheckIcon, WifiIcon, DeviceTabletIcon } from '@heroicons/react/24/outline';
+import { WifiIcon, DeviceTabletIcon, BookOpenIcon } from '@heroicons/react/24/outline';
 
 export interface FilterData {
   id: string;
@@ -25,7 +25,7 @@ export const typeFilterData: FilterData = {
       label: 'Find Digital Skills Help and Classes',
       checked: false,
       type: 'Primary_Filter',
-      icon: CheckIcon,
+      icon: BookOpenIcon,
     },
     {
       value: 'Get a computer or device',
