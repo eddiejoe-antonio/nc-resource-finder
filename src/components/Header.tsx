@@ -82,12 +82,12 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
       </div>
       <div className='grid grid-cols-12 w-full'>
         <div className='col-start-1 col-span-12 md:col-start-1 md:col-span-8 mb-4'>
-          <h2 className=''>
+          <p className=''>
             <strong className=''>Welcome to the Tech Resource Finder!</strong> The North Carolina
             Office of Digital Equity and Literacy built this interactive tool for exploring the
             digital equity resources available in North Carolina. Scroll, filter, and click through
             the results to find support for digital equity needs across North Carolina.{' '}
-          </h2>
+          </p>
         </div>
         <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-3 flex justify-between md:justify-center'>
           <button

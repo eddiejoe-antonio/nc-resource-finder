@@ -26,7 +26,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   return (
     <div className='flex flex-col font-inter border bg-white drop-shadow-md border-[#0E3052] overflow-hidden transition-all ease-in-out duration-300 rounded-md '>
       <div className=' text-black bg-[#EEF7FF] p-4'>
-        <h3 className='text-md font-bold'>{resource.Name}</h3>
+        <h2 className='text-md font-bold'>{resource.Name}</h2>
       </div>
       <div className='px-4 pt-4'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
@@ -65,7 +65,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
         </button>
         {showMore && (
           <div className='text-sm text-[#0E3052] mt-4'>
-            <h3 className='my-2 font-semibold'>Description</h3>
+            <h2 className='my-2 font-semibold'>Description</h2>
             <p>{resource.Servicesprovided}</p>
           </div>
         )}
