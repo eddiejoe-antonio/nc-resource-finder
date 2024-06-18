@@ -81,10 +81,17 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
                   How Did North Carolina Gather These Resources?
                 </h2>
                 <p>
-                  The resources shown here were gathered as part of North Carolina’s State Digital
-                  Equity planning work in 2023. Community members, digital navigators, academic
-                  partners, state agencies, and everyday North Carolinians contributed to the
-                  dataset.
+                  The resources shown here were gathered as part of North Carolina’s{' '}
+                  <a
+                    href='https://www.ncbroadband.gov/Digital-Equity-Plan'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className=' text-[#092940] underline md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
+                  >
+                    State Digital Equity Plan
+                  </a>{' '}
+                  in 2023. Community members, digital navigators, academic partners, state agencies,
+                  and everyday North Carolinians contributed to the dataset.
                 </p>
               </section>
               <section>
