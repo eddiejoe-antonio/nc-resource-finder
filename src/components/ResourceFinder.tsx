@@ -557,8 +557,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               onClick={() => toggleTypeSelection(option.value)}
               className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 md:mb-1 rounded-full shadow-lg transition-colors whitespace-nowrap ${
                 selectedType.includes(option.value)
-                  ? 'bg-[#1E79C8] text-white border-b-4 border-white'
-                  : 'bg-[#092940] text-white border-none md:hover:bg-[#3892E1]'
+                  ? 'bg-[#1E79C8] text-white border border-white'
+                  : 'bg-[#092940] text-white border border-[#092940] md:hover:bg-[#3892E1]'
               } `}
             >
               {option.icon && <option.icon className='w-6 h-6 mr-2' />}
