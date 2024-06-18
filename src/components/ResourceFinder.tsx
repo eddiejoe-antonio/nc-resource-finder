@@ -8,6 +8,7 @@ import { Position } from 'geojson';
 import Pagination from './Pagination';
 import { fetchResources } from '../utils/apiService';
 import { Resource } from '../types/resourceFinderTypes'; // Import the Resource type
+import Fuse from 'fuse.js';
 
 mapboxgl.accessToken =
   'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
@@ -321,37 +322,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     scrollToTop();
   };
 
-  const filteredResources = resources
-    .map((resource) => ({
-      ...resource,
-      Type: Array.isArray(resource.Primary_Filter)
-        ? resource.Primary_Filter
-        : [resource.Primary_Filter || ''],
-    }))
-    .filter((resource) => {
-      const countyMatch = !selectedCounty || resource.Geography === (selectedCounty?.value || '');
-      const typeMatch =
-        selectedType.length === 0 || selectedType.some((type) => resource.Type.includes(type));
-      const searchMatch = searchQuery
-        ? ['Name', 'Description', 'Type', 'Geography'].some((field) =>
-            field === 'Type'
-              ? resource.Type.some((type) => type.toLowerCase().includes(searchQuery.toLowerCase()))
-              : resource[field as keyof Resource] &&
-                typeof resource[field as keyof Resource] === 'string' &&
-                (resource[field as keyof Resource] as string)
-                  .toLowerCase()
-                  .includes(searchQuery.toLowerCase()),
-          )
-        : true;
-      return countyMatch && typeMatch && searchMatch;
-    });
-
-  const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE);
-  const paginatedResources = filteredResources.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
@@ -477,8 +447,39 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           .join(', ')
       : 'with technical issues';
 
+  const fuseOptions = {
+    keys: ['Name', 'Description', 'Primary_Filter', 'Geography'],
+    threshold: 0.3,
+  };
+
+  const fuse = new Fuse(resources, fuseOptions);
+
+  const filteredResources = searchQuery
+    ? fuse.search(searchQuery).map((result) => result.item)
+    : resources;
+
+  const filteredAndMappedResources = filteredResources
+    .map((resource) => ({
+      ...resource,
+      Type: Array.isArray(resource.Primary_Filter)
+        ? resource.Primary_Filter
+        : [resource.Primary_Filter || ''],
+    }))
+    .filter((resource) => {
+      const countyMatch = !selectedCounty || resource.Geography === (selectedCounty?.value || '');
+      const typeMatch =
+        selectedType.length === 0 || selectedType.some((type) => resource.Type.includes(type));
+      return countyMatch && typeMatch;
+    });
+
+  const totalPages = Math.ceil(filteredAndMappedResources.length / ITEMS_PER_PAGE);
+  const paginatedResources = filteredAndMappedResources.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
   return (
-    <div className='w-full md:px-28 2xl:px-40 py-4'>
+    <div className='w-full py-4'>
       <hr className='border-t-1 border-black' />
       <div className='flex flex-col lg:flex-row lg:items-start lg:space-x-4 py-4 px-2 bg-[#EEF7FF]'>
         <div className='relative flex-1 mb-4 lg:mb-0 lg:w-1/2'>
@@ -556,8 +557,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               onClick={() => toggleTypeSelection(option.value)}
               className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 md:mb-1 rounded-full shadow-lg transition-colors whitespace-nowrap ${
                 selectedType.includes(option.value)
-                  ? 'bg-[#1E79C8] text-white'
-                  : 'bg-[#092940] text-white md:hover:bg-[#3892E1]'
+                  ? 'bg-[#1E79C8] text-white border-b-4 border-white'
+                  : 'bg-[#092940] text-white border-none md:hover:bg-[#3892E1]'
               } `}
             >
               {option.icon && <option.icon className='w-6 h-6 mr-2' />}
@@ -568,8 +569,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       </div>
       <div className='py-2 pb-3 bg-[#EEF7FF]'>
         <p className='ml-1 md:ml-2'>
-          Showing <strong>{filteredResources.length}</strong> results. You are viewing resources in{' '}
-          <strong>{currentGeography}</strong>
+          Showing <strong>{filteredAndMappedResources.length}</strong> results. You are viewing
+          resources in <strong>{currentGeography}</strong>
           {selectedType.length > 0 && (
             <>
               {' '}

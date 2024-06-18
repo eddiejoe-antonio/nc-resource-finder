@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { QuestionMarkCircleIcon, MapPinIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+import {
+  MapPinIcon,
+  ListBulletIcon,
+  PlusCircleIcon,
+  QuestionMarkCircleIcon,
+} from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import AboutModal from './AboutModal';
 
@@ -12,6 +17,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsModalOpen }) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpenLocal] = useState(false);
+  const [isHovered, setIsHovered] = useState(false); // State for hover effect
   const learnMoreButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleNavigate = (view: string) => {
@@ -48,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
   return (
     <div className='w-full'>
       <div className='block md:grid md:grid-cols-12 items-center'>
-        <div className='mt-16 md:mb-12 col-start-2 col-span-8 gap-0 text-left'>
+        <div className='mt-16 md:mb-12 col-start-1 col-span-8 gap-0 text-left'>
           <h1 className="block md:inline text-[#3B75A9] text-[1.5rem] md:text-[2rem] font-regular font-['Source Sans Pro'] uppercase">
             North Carolina{` `}
           </h1>
@@ -61,7 +67,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
             ref={learnMoreButtonRef}
             aria-modal='true'
             role='alertdialog'
-            aria-label='Learn more about the North Carolina Resource Finder'
+            aria-label='Contribute to the North Carolina Resource Finder'
             onClick={handleAboutClick}
             className={`flex items-center px-4 py-2 rounded-full shadow-md cursor-pointer transition ease-in-out duration-300 ${
               isModalOpen
@@ -69,13 +75,13 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
                 : 'bg-[#FFE9EE] text-[#BC2442] hover:bg-[#BC2442] hover:text-[#FFE9EE]'
             }`}
           >
-            <QuestionMarkCircleIcon className='w-6 h-6 mr-2' />
-            <span className='whitespace-nowrap'>Learn More</span>
+            <PlusCircleIcon className='w-6 h-6 mr-2' />
+            <span className='whitespace-nowrap'>Contribute to the Dataset</span>
           </button>
         </div>
       </div>
       <div className='grid grid-cols-12 w-full'>
-        <div className='col-start-1 col-span-12 md:col-start-2 md:col-span-7 mb-4'>
+        <div className='col-start-1 col-span-12 md:col-start-1 md:col-span-8 mb-4'>
           <h2 className=''>
             <strong className=''>Welcome to the Tech Resource Finder!</strong> The North Carolina
             Office of Digital Equity and Literacy built this interactive tool for exploring the
@@ -83,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
             the results to find support for digital equity needs across North Carolina.{' '}
           </h2>
         </div>
-        <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-2 flex justify-between md:justify-center'>
+        <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-3 flex justify-between md:justify-center'>
           <button
             className={`flex-grow flex items-center justify-center shadow-md gap-2 py-1 md:h-14 rounded-l-lg ${
               selectedView === 'map'
@@ -111,6 +117,20 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
 
       {/* About Modal */}
       {isModalOpen && <AboutModal onClose={handleModalClose} />}
+      <a
+        href='' // Replace with the desired URL
+        target='_blank'
+        rel='noopener noreferrer'
+        className='hidden z-40 fixed bottom-8 left-8 md:flex items-center px-4 py-2 rounded-full shadow-md cursor-pointer transition ease-in-out duration-300 bg-[#FFE9EE] text-[#BC2442] hover:bg-[#BC2442] hover:text-[#FFE9EE]'
+        aria-label='Learn how to use this tool'
+        onMouseEnter={() => setIsHovered(true)} // Set hover state to true on mouse enter
+        onMouseLeave={() => setIsHovered(false)} // Set hover state to false on mouse leave
+      >
+        <QuestionMarkCircleIcon className='w-6 h-6' />
+        {isHovered && ( // Conditionally render the text on hover
+          <span className='ml-2 whitespace-nowrap'>Learn How to Use This Tool</span>
+        )}
+      </a>
     </div>
   );
 };

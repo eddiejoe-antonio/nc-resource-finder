@@ -9,7 +9,7 @@ const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div className='mx-4 md:mx-0'>
+    <div className='mx-4 md:mx-32'>
       <Router>
         <Header
           selectedView={selectedView}
