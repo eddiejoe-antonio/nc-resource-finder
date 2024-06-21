@@ -480,9 +480,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
 
   return (
     <div className='w-full py-4'>
-      <hr className='border-t-1 border-black' />
+      <hr className='border-black' />
       <div className='flex flex-col lg:flex-row lg:items-start lg:space-x-4 py-4 px-2 bg-[#EEF7FF]'>
-        <div className='relative flex-1 mb-4 lg:mb-0 lg:w-1/2'>
+        <div className='relative flex-1 lg:w-1/2'>
           <label htmlFor='keyword-input' className='sr-only'>
             Keyword Search
           </label>
@@ -498,7 +498,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             onChange={handleSearchChange}
           />
         </div>
-        <div className='relative flex-1 mb-0 md:mb-4 lg:mb-0 lg:w-1/2' ref={dropdownRef}>
+        <div className='relative flex-1 lg:w-1/2' ref={dropdownRef}>
           <label htmlFor='county-input' className='sr-only'>
             County Selector
           </label>
@@ -549,7 +549,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         </div>
       </div>
       <div className='flex flex-col md:flex-row flex-wrap py-2 justify-start bg-[#EEF7FF]'>
-        <div className='flex flex-wrap'>
+        <div className='text-md flex flex-wrap'>
           {typeFilterData.options.map((option: FilterOption) => (
             <button
               aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
@@ -567,7 +567,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           ))}
         </div>
       </div>
-      <div className='py-2 pb-3 bg-[#EEF7FF]'>
+      <div className='pb-3 bg-[#EEF7FF]'>
         <p className='ml-1 md:ml-2'>
           Showing <strong>{filteredAndMappedResources.length}</strong> results. You are viewing
           resources in <strong>{currentGeography}</strong>
@@ -579,7 +579,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           )}
         </p>
       </div>
-      <hr className='border-t-1 border-black' />
+      <hr className='border-black' />
       {selectedView === 'list' ? (
         <div>
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 py-10 space-y-0'>

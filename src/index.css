@@ -27,6 +27,29 @@ input {
   }
 }
 
+.mx-container {
+  margin-left: 1rem; /* mx-4 */
+  margin-right: 1rem; /* mx-4 */
+}
+
+@media (min-width: 768px) {
+  .mx-container {
+    margin-left: 8rem; /* md:mx-32 */
+    margin-right: 8rem; /* md:mx-32 */
+  }
+}
+
+/* Ensure all borders are black */
+.border-black {
+  border-color: black !important;
+}
+
+/* Address spacing around hr tags */
+hr {
+  margin: 0 !important;
+  border-top: 1px solid black !important;
+}
+
 /* global.css */
 *:focus {
   outline: 2px solid black;
