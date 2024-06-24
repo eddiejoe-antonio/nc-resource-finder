@@ -448,7 +448,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       : 'with technical issues';
 
   const fuseOptions = {
-    keys: ['Name', 'Description', 'Primary_Filter', 'Geography'],
+    keys: ['Name', 'Description', 'primary_type', 'Geography'],
     threshold: 0.3,
   };
 
@@ -461,12 +461,12 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const filteredAndMappedResources = filteredResources
     .map((resource) => ({
       ...resource,
-      Type: Array.isArray(resource.Primary_Filter)
-        ? resource.Primary_Filter
-        : [resource.Primary_Filter || ''],
+      Type: Array.isArray(resource.primary_type)
+        ? resource.primary_type
+        : [resource.primary_type || ''],
     }))
     .filter((resource) => {
-      const countyMatch = !selectedCounty || resource.Geography === (selectedCounty?.value || '');
+      const countyMatch = !selectedCounty || resource.geography === (selectedCounty?.value || '');
       const typeMatch =
         selectedType.length === 0 || selectedType.some((type) => resource.Type.includes(type));
       return countyMatch && typeMatch;
