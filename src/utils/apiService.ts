@@ -21,7 +21,14 @@ export const fetchResources = async (): Promise<Resource[]> => {
     dynamicTyping: true,
   }).data;
 
-  console.log(parsedData);
+  // Sort the parsed data alphabetically by the "name" column
+  const sortedData = parsedData.sort((a, b) => {
+    if (a.name < b.name) return -1;
+    if (a.name > b.name) return 1;
+    return 0;
+  });
 
-  return parsedData;
+  console.log(sortedData);
+
+  return sortedData;
 };
