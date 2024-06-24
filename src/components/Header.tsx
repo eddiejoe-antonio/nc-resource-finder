@@ -118,7 +118,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
       {/* About Modal */}
       {isModalOpen && <AboutModal onClose={handleModalClose} />}
       <a
-        href='' // Replace with the desired URL
+        href='https://nc-resource-finder.s3.amazonaws.com/test.mp4' // Replace with the desired URL
         target='_blank'
         rel='noopener noreferrer'
         className='hidden z-40 fixed bottom-8 left-8 md:flex items-center px-4 py-2 rounded-full shadow-md cursor-pointer transition ease-in-out duration-300 bg-[#FFE9EE] text-[#BC2442] hover:bg-[#BC2442] hover:text-[#FFE9EE]'
