@@ -2,7 +2,10 @@ import Papa from 'papaparse';
 import { Resource } from '../types/resourceFinderTypes';
 
 export const fetchResources = async (): Promise<Resource[]> => {
-  const response = await fetch('https://files.nc.gov/asset-hub/resources.csv', {
+  const timestamp = new Date().getTime();
+  const url = `https://files.nc.gov/asset-hub/resources.csv?t=${timestamp}`;
+
+  const response = await fetch(url, {
     headers: {
       'Content-Type': 'text/plain',
     },
@@ -17,6 +20,8 @@ export const fetchResources = async (): Promise<Resource[]> => {
     header: true,
     dynamicTyping: true,
   }).data;
+
+  console.log(parsedData);
 
   return parsedData;
 };

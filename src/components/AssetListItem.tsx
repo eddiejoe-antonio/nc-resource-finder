@@ -26,38 +26,38 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   return (
     <div className='flex flex-col font-inter border bg-white drop-shadow-md border-black overflow-hidden transition-all ease-in-out duration-300 rounded-md '>
       <div className=' text-black bg-[#EEF7FF] px-4 py-2'>
-        <p className='mt-1 font-bold'>{resource.Name}</p>
+        <p className='mt-1 font-bold'>{resource.name}</p>
       </div>
       <div className='px-4 pt-4'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
           <MapPinIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          {resource.Geography}
+          {resource.geography}
         </div>
       </div>
       <div className='px-4'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
           <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          {formatType(resource.Primary_Filter ?? '')}
+          {formatType(resource.primary_type ?? '')}
         </div>
       </div>
       <div className='px-4 pb-6'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
           <LinkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          {resource.Website && (
+          {resource.website && (
             <a
-              href={formatWebsite(resource.Website)}
+              href={formatWebsite(resource.website)}
               target='_blank'
               rel='noopener noreferrer'
               className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
             >
-              {resource.Website}
+              {resource.website}
             </a>
           )}
         </div>
       </div>
       <div className='px-4 pb-4'>
         <button
-          aria-label={`Learn more about ${resource.Name}`}
+          aria-label={`Learn more about ${resource.name}`}
           onClick={() => setShowMore(!showMore)}
           className='bg-[#092940] hover:bg-[#3892E1] text-white text-sm cursor-pointer px-12 py-2 rounded-full transition-colors duration-300 flex items-center justify-center gap-2 shadow'
         >
@@ -66,7 +66,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
         {showMore && (
           <div className='text-sm text-[#0E3052] mt-4'>
             <p className='my-2 font-semibold'>Description</p>
-            <p>{resource.Servicesprovided}</p>
+            <p>{resource.description}</p>
           </div>
         )}
       </div>
