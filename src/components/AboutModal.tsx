@@ -132,7 +132,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
                   If you are having trouble using the app, please review the training video
                   available at this{' '}
                   <a
-                    href='/'
+                    href='https://nc-resource-finder.s3.amazonaws.com/trainingVideo.mp4'
                     target='_blank'
                     rel='noopener noreferrer'
                     className=' text-[#092940] underline md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
