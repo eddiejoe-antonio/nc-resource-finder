@@ -24,31 +24,33 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   };
 
   return (
-    <div className='flex flex-col font-inter border bg-white drop-shadow-md border-black overflow-hidden transition-all ease-in-out duration-300 rounded-md '>
-      <div className=' text-black bg-[#EEF7FF] px-4 py-2'>
+    <div className='flex flex-col font-inter border bg-white drop-shadow-md border-black transition-all ease-in-out duration-300 rounded-md'>
+      <div className='text-black rounded-md bg-[#EEF7FF] px-4 py-2'>
         <p className='mt-1 font-bold'>{resource.name}</p>
       </div>
       <div className='px-4 pt-4'>
-        <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
-          <MapPinIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          {resource.geography}
+        <div className='flex flex-wrap overflow-x-auto items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
+          <MapPinIcon className='h-5 w-5 mr-2 text-[#0E3052] flex-shrink-0' />
+          <div className='flex-grow whitespace-normal break-words'>{resource.geography}</div>
         </div>
       </div>
       <div className='px-4'>
         <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
-          <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
-          {formatType(resource.primary_type ?? '')}
+          <BookmarkIcon className='h-5 w-5 mr-2 text-[#0E3052] flex-shrink-0' />
+          <div className='flex-grow whitespace-normal break-words'>
+            {formatType(resource.primary_type ?? '')}
+          </div>
         </div>
       </div>
       <div className='px-4 pb-6'>
-        <div className='flex items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
-          <LinkIcon className='h-5 w-5 mr-2 text-[#0E3052]' />
+        <div className='flex flex-wrap overflow-x-auto items-center text-sm px-2 py-2 mb-2 border border-gray-300 rounded-lg'>
+          <LinkIcon className='h-5 w-5 mr-2 text-[#0E3052] flex-shrink-0' />
           {resource.website && (
             <a
               href={formatWebsite(resource.website)}
               target='_blank'
               rel='noopener noreferrer'
-              className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
+              className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300 flex-grow whitespace-normal break-words'
             >
               {resource.website}
             </a>
@@ -64,9 +66,9 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
           {showMore ? <>Collapse</> : <>Learn More</>}
         </button>
         {showMore && (
-          <div className='text-sm text-[#0E3052] mt-4'>
+          <div className='text-sm mt-4'>
             <p className='my-2 font-semibold'>Description</p>
-            <p>{resource.description}</p>
+            <p className='whitespace-normal break-words'>{resource.description}</p>
           </div>
         )}
       </div>
