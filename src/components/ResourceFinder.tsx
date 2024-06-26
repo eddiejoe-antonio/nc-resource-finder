@@ -484,7 +484,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     <div className='w-full py-4'>
       <hr className='border-black' />
       <div className='flex flex-col lg:flex-row lg:items-start lg:space-x-4 py-4 px-2 bg-[#EEF7FF]'>
-        <div className='relative flex-1 lg:w-1/2'>
+        <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2'>
           <label htmlFor='keyword-input' className='sr-only'>
             Keyword Search
           </label>
