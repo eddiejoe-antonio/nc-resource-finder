@@ -121,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
         href='https://nc-resource-finder.s3.amazonaws.com/trainingVideo.mp4' // Replace with the desired URL
         target='_blank'
         rel='noopener noreferrer'
-        className='hidden z-40 fixed bottom-8 left-8 md:flex items-center px-4 py-2 rounded-full shadow-md cursor-pointer transition ease-in-out duration-300 bg-[#FFE9EE] text-[#BC2442] hover:bg-[#BC2442] hover:text-[#FFE9EE]'
+        className='hidden z-10 fixed left-3 bottom-[80px] md:flex items-center px-4 py-2 rounded-full shadow-md cursor-pointer transition ease-in-out duration-300 bg-[#FFE9EE] text-[#BC2442] hover:bg-[#BC2442] hover:text-[#FFE9EE]'
         aria-label='Learn how to use this tool'
         onMouseEnter={() => setIsHovered(true)} // Set hover state to true on mouse enter
         onMouseLeave={() => setIsHovered(false)} // Set hover state to false on mouse leave

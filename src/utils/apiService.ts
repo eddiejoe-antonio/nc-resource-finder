@@ -3,6 +3,7 @@ import { Resource } from '../types/resourceFinderTypes';
 
 export const fetchResources = async (): Promise<Resource[]> => {
   const timestamp = new Date().getTime();
+  // const url = `https://nc-resource-finder.s3.amazonaws.com/resources.csv`;
   const url = `https://files.nc.gov/asset-hub/resources.csv?t=${timestamp}`;
 
   const response = await fetch(url, {
