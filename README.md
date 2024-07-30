@@ -56,7 +56,6 @@ Once permissions have been acquired, the following steps can be taken to integra
 - a librarries.yml file
 - a module.yml file
 - a routing.yml file
-
-If these files do not exist, consult the custom module titled _nc_json_views_ for examples on how to integrate a custom Javascript component into a Drupal instance.
+  If these files do not exist, consult the custom module titled _nc_json_views_ for examples on how to integrate a custom Javascript component into a Drupal instance.
 
 7. Contribute code on this branch using the same Git workflow as above, understanding that you are pushing to NCDIT's codebase and will receive reviews from NCDIT employees. 8. On Github, open up a pull request to NCDIT's _develop_ branch.
