@@ -12,6 +12,8 @@ export interface Resource {
   website?: string;
   description?: string; // Define this property if it's missing
   OrganizationTypeBroadsector?: string; // Define this property if it's missing
+  long: number;
+  lat: number;
 }
 
 export interface AssetListItemProps {

@@ -6,9 +6,15 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Position } from 'geojson';
 import Pagination from './Pagination';
-import { fetchResources } from '../utils/apiService';
+import { fetchResources, fetchGeoResources } from '../utils/apiService';
 import { Resource } from '../types/resourceFinderTypes'; // Import the Resource type
 import Fuse from 'fuse.js';
+import type GeoJSON from 'geojson'; // Ensure you have the 'geojson' types installed
+
+type GeoJsonFeatureCollection = GeoJSON.FeatureCollection<
+  GeoJSON.Geometry,
+  GeoJSON.GeoJsonProperties
+>;
 
 mapboxgl.accessToken =
   'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
@@ -25,6 +31,10 @@ interface ResourceFinderProps {
 
 const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOpen }) => {
   const [resources, setResources] = useState<Resource[]>([]);
+  const [geoResource, setGeoResource] = useState<GeoJsonFeatureCollection>({
+    type: 'FeatureCollection',
+    features: [],
+  });
   const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [selectedType, setSelectedType] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,7 +62,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     const fetchData = async () => {
       try {
         const data = await fetchResources();
+        const geoData = await fetchGeoResources();
         setResources(data);
+        setGeoResource(geoData);
       } catch (error) {
         console.error('Error fetching resources:', error);
       }
@@ -158,7 +170,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               'source-layer': 'ncgeo',
               paint: {
                 'fill-color': '#acacac',
-                'fill-opacity': 0.9,
+                'fill-opacity': 0.5,
                 'fill-outline-color': 'white',
               },
             },
@@ -172,14 +184,39 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               source: 'counties',
               'source-layer': 'ncgeo',
               paint: {
-                'fill-color': '#888',
-                'fill-outline-color': 'white',
-                'fill-opacity': 0.7,
+                'fill-color': 'rgba(0,0,0,0)',
+                'fill-outline-color': '#BC2442',
+                'fill-opacity': 1.0,
               },
               filter: ['==', 'County', ''],
             },
             firstPlaceLabelId,
           );
+          // Add GeoJSON data to the map if available
+          if (geoResource) {
+            mapInstance.current.addSource('geojson-data', {
+              type: 'geojson',
+              data: geoResource,
+            });
+
+            mapInstance.current.addLayer({
+              id: 'geojson-layer',
+              type: 'circle',
+              source: 'geojson-data',
+              paint: {
+                'circle-radius': {
+                  stops: [
+                    [8, 1.75],
+                    [11, 6],
+                    [16, 8],
+                  ],
+                },
+                'circle-color': '#BC2442',
+                'circle-stroke-color': 'white',
+                'circle-stroke-width': 0.5,
+              },
+            });
+          }
 
           mapInstance.current.on('click', 'counties-layer', (e) => {
             if (e.features && e.features.length > 0) {
@@ -249,7 +286,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       mapInstance.current.setPaintProperty('counties-layer', 'fill-color', [
         'case',
         ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
-        '#888',
+        'rgba(255, 255, 255, 0)',
         '#adadad',
       ]);
 

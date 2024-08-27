@@ -29,7 +29,45 @@ export const fetchResources = async (): Promise<Resource[]> => {
     return 0;
   });
 
-  console.log(sortedData);
-
   return sortedData;
+};
+
+export const fetchGeoResources = async (): Promise<GeoJSON.FeatureCollection> => {
+  const timestamp = new Date().getTime();
+  // const url = `https://nc-resource-finder.s3.amazonaws.com/resources.csv`;
+  const url = `https://files.nc.gov/asset-hub/resources.csv?t=${timestamp}`;
+
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch resources');
+  }
+
+  const csvText = await response.text();
+  const parsedData = Papa.parse<Resource>(csvText, {
+    header: true,
+    dynamicTyping: true,
+  }).data;
+
+  // Convert the parsed data to GeoJSON format
+  const geoJsonData: GeoJSON.FeatureCollection = {
+    type: 'FeatureCollection',
+    features: parsedData.map((resource) => ({
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [resource.long, resource.lat],
+      },
+      properties: {
+        name: resource.name,
+        // Add other relevant properties here
+      },
+    })),
+  };
+
+  return geoJsonData;
 };
