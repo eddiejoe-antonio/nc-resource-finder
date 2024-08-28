@@ -8,7 +8,7 @@ export enum ViewType {
 export interface Resource {
   name: string;
   geography?: string;
-  zipcode?: string;
+  zip_code?: string;
   primary_type?: string; // Now Type can be either a string or an array of strings
   website?: string;
   description?: string; // Define this property if it's missing
