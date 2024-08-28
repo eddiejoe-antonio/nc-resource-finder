@@ -152,6 +152,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             type: 'vector',
             url: 'mapbox://eddiejoeantonio.5kdb3ae2',
           });
+          mapInstance.current.addSource('zipcodes', {
+            type: 'vector',
+            url: 'mapbox://eddiejoeantonio.23a15qmt',
+          });
 
           const layers = mapInstance.current.getStyle().layers;
           let firstPlaceLabelId;
@@ -170,6 +174,20 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               'source-layer': 'ncgeo',
               paint: {
                 'fill-color': '#acacac',
+                'fill-opacity': 0.5,
+                'fill-outline-color': 'white',
+              },
+            },
+            firstPlaceLabelId,
+          );
+          mapInstance.current.addLayer(
+            {
+              id: 'zipcode-layer',
+              type: 'fill',
+              source: 'zipcodes',
+              'source-layer': 'NC_Zipcodes',
+              paint: {
+                'fill-color': '#6a3d3d',
                 'fill-opacity': 0.5,
                 'fill-outline-color': 'white',
               },
