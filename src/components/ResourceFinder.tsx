@@ -180,20 +180,20 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             },
             firstPlaceLabelId,
           );
-          mapInstance.current.addLayer(
-            {
-              id: 'zipcode-layer',
-              type: 'fill',
-              source: 'zipcodes',
-              'source-layer': 'NC_Zipcodes',
-              paint: {
-                'fill-color': '#6a3d3d',
-                'fill-opacity': 0.5,
-                'fill-outline-color': 'white',
-              },
-            },
-            firstPlaceLabelId,
-          );
+          // mapInstance.current.addLayer(
+          //   {
+          //     id: 'zipcode-layer',
+          //     type: 'fill',
+          //     source: 'zipcodes',
+          //     'source-layer': 'NC_Zipcodes',
+          //     paint: {
+          //       'fill-color': '#6a3d3d',
+          //       'fill-opacity': 0.5,
+          //       'fill-outline-color': 'white',
+          //     },
+          //   },
+          //   firstPlaceLabelId,
+          // );
 
           mapInstance.current.addLayer(
             {
@@ -210,7 +210,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             },
             firstPlaceLabelId,
           );
-          // Add GeoJSON data to the map if available
+
           if (geoResource) {
             mapInstance.current.addSource('geojson-data', {
               type: 'geojson',
@@ -224,7 +224,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               paint: {
                 'circle-radius': {
                   stops: [
-                    [8, 1.75],
+                    [8, 2.5],
                     [11, 6],
                     [16, 8],
                   ],
@@ -234,7 +234,39 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
                 'circle-stroke-width': 0.5,
               },
             });
+
+            // Create a tooltip div
+            const tooltip = new mapboxgl.Popup({
+              closeButton: false,
+              closeOnClick: false,
+            });
+
+            // Display the tooltip on hover
+            mapInstance.current!.on('mousemove', 'geojson-layer', (e) => {
+              const coordinates = e.lngLat;
+              const feature = e.features?.[0];
+
+              if (feature && feature.properties) {
+                // Set the tooltip content
+                tooltip
+                  .setLngLat(coordinates)
+                  .setHTML(`<strong>${feature.properties.name}</strong>`)
+                  .addTo(mapInstance.current!);
+              }
+            });
+
+            // Remove the tooltip on mouseleave
+            mapInstance.current!.on('mouseleave', 'geojson-layer', () => {
+              tooltip.remove();
+            });
           }
+
+          return () => {
+            if (mapInstance.current) {
+              mapInstance.current.remove();
+              mapInstance.current = null;
+            }
+          };
 
           mapInstance.current.on('click', 'counties-layer', (e) => {
             if (e.features && e.features.length > 0) {
@@ -592,7 +624,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
                         : 'font-normal'
                     }`}
                   >
-                    {option.label} County
+                    {option.label}
                   </span>
                   {selectedCounty && selectedCounty.value === option.value && (
                     <span className='absolute inset-y-0 left-0 flex items-center pl-3'>
