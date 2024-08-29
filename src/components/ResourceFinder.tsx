@@ -656,7 +656,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
                 className={`flex items-center px-6 py-2 mb-2 md:mb-1 rounded-full transition-colors whitespace-nowrap ${
                   selectedType.includes(option.value)
                     ? 'bg-[#1E79C8] text-white border border-white'
-                    : 'bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1]'
+                    : 'bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1] md:hover:text-white'
                 } `}
               >
                 {option.icon && <option.icon className='w-6 h-6 mr-2' />}
@@ -671,7 +671,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         <div>
           <div className='flex justify-between items-center'>
             <div>
-              <p className='my-2 md:mt-8 text-lg'>
+              <p className='my-2 md:my-6 text-lg'>
                 Showing {filteredAndMappedResources.length} results for{' '}
                 <strong>{currentGeography}</strong>
                 {selectedType.length > 0 && (
@@ -761,7 +761,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               </label>
             </div>
             <div className='pb-3'>
-              <p className='my-2 md:my-2 text-lg'>
+              <p className='my-2 md:my-4 text-lg'>
                 Showing {filteredAndMappedResources.length} results for{' '}
                 <strong>{currentGeography}</strong>
                 {selectedType.length > 0 && (

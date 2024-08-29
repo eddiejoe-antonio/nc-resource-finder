@@ -61,14 +61,20 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
         <button
           aria-label={`Learn more about ${resource.name}`}
           onClick={() => setShowMore(!showMore)}
-          className='border border-[#1E79C8] text-[#1E79C8] hover:bg-[#3892E1] hover:text-white text-sm cursor-pointer px-12 py-2 rounded-full transition-colors duration-300 flex items-center justify-center gap-2'
+          className='border border-[#1E79C8] text-[#1E79C8] hover:bg-[#3892E1] hover:text-white text-sm cursor-pointer px-12 py-2 rounded-full transition-colors duration-300 flex items-center justify-center gap-2 font-semibold'
         >
           {showMore ? <>Collapse</> : <>Learn More</>}
         </button>
         {showMore && (
-          <div className='text-sm mt-4'>
-            <p className='my-2 font-semibold'>Description</p>
-            <p className='whitespace-normal break-words'>{resource.description}</p>
+          <div className='my-4 text-md'>
+            <div className='my-4'>
+              <p className='my-2 font-semibold'>Description</p>
+              <p className='whitespace-normal break-words'>{resource.description}</p>
+            </div>
+            <div className='my-4'>
+              <p className='my-2 font-semibold'>Address</p>
+              <p className='whitespace-normal break-words'>{resource.address_geocode}</p>
+            </div>
           </div>
         )}
       </div>
