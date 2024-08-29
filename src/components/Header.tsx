@@ -1,29 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  MapPinIcon,
-  ListBulletIcon,
-  PlusCircleIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
+import { PlusCircleIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 import AboutModal from './AboutModal';
 
 interface HeaderProps {
-  selectedView: string;
-  setSelectedView: (view: string) => void;
   setIsModalOpen: (isOpen: boolean) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsModalOpen }) => {
-  const navigate = useNavigate();
+const Header: React.FC<HeaderProps> = ({ setIsModalOpen }) => {
   const [isModalOpen, setIsModalOpenLocal] = useState(false);
   const [isHovered, setIsHovered] = useState(false); // State for hover effect
   const learnMoreButtonRef = useRef<HTMLButtonElement>(null);
-
-  const handleNavigate = (view: string) => {
-    setSelectedView(view);
-    navigate('/');
-  };
 
   const handleAboutClick = () => {
     setIsModalOpenLocal(true);
@@ -53,13 +39,13 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
 
   return (
     <div className='w-full'>
-      <div className='block md:grid md:grid-cols-12 items-center'>
+      <div className='flex items-center justify-between'>
         <div className='mt-16 md:mb-12 col-start-1 col-span-8 gap-0 text-left'>
-          <h1 className="block md:inline text-[#3B75A9] text-[1.5rem] md:text-[2rem] font-regular font-['Source Sans Pro'] uppercase">
-            North Carolina{` `}
+          <h1 className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-black font-['Source Sans Pro']">
+            Find Technology Resources{` `}
           </h1>
-          <h1 className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-black font-['Source Sans Pro'] uppercase">
-            Tech Resource Finder
+          <h1 className="block md:inline text-[#3B75A9] text-[1.5rem] md:text-[2rem] font-light font-['Source Sans Pro']">
+            In North Carolina
           </h1>
         </div>
         <div className='flex justify-start items-center col-start-10 col-span-2 my-4 md:my-0 md:mt-3'>
@@ -76,20 +62,18 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
             }`}
           >
             <PlusCircleIcon className='w-6 h-6 mr-2' />
-            <span className='whitespace-nowrap'>Contribute to the Dataset</span>
+            <span className='whitespace-nowrap'>Add a Resource</span>
           </button>
         </div>
       </div>
-      <div className='grid grid-cols-12 w-full'>
-        <div className='col-start-1 col-span-12 md:col-start-1 md:col-span-8 mb-4'>
-          <p className=''>
-            <strong className=''>Welcome to the Tech Resource Finder!</strong> The North Carolina
-            Office of Digital Equity and Literacy built this interactive tool for exploring the
-            digital equity resources available in North Carolina. Scroll, filter, and click through
-            the results to find support for digital equity needs across North Carolina.{' '}
+      <div className='w-full'>
+        <div className='pb-4'>
+          <p className='text-lg'>
+            Use this tool to find resources like public Wi-Fi sites, technical assistance and
+            digital classes across the state of North Carolina.
           </p>
         </div>
-        <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-3 flex justify-between md:justify-center'>
+        {/* <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-3 flex justify-between md:justify-center'>
           <button
             className={`flex-grow flex items-center justify-center shadow-md gap-2 py-1 md:h-14 rounded-l-lg ${
               selectedView === 'map'
@@ -112,7 +96,7 @@ const Header: React.FC<HeaderProps> = ({ selectedView, setSelectedView, setIsMod
             <ListBulletIcon className='h-5 w-5 md:h-10 md:w-10' />
             List
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* About Modal */}

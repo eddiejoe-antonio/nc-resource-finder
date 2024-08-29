@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckIcon, MapIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import AssetListItem from './AssetListItem';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
@@ -25,11 +26,10 @@ interface County {
 }
 
 interface ResourceFinderProps {
-  selectedView: string;
   isModalOpen: boolean;
 }
 
-const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOpen }) => {
+const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [geoResource, setGeoResource] = useState<GeoJsonFeatureCollection>({
     type: 'FeatureCollection',
@@ -53,7 +53,12 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const countyInputRef = useRef<HTMLInputElement>(null);
   const assetSectionRef = useRef<HTMLDivElement>(null);
   const srCountyRef = useRef<HTMLDivElement>(null); // Ref for screen reader announcement
-
+  const [selectedView, setSelectedView] = useState('list');
+  const navigate = useNavigate();
+  const handleNavigate = (view: string) => {
+    setSelectedView(view);
+    navigate('/');
+  };
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
   );
@@ -564,42 +569,47 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
 
   return (
     <div className='w-full py-4'>
-      <hr className='border-black' />
-      <div className='flex flex-col lg:flex-row lg:items-start lg:space-x-4 py-4 px-2 bg-[#EEF7FF]'>
+      <div className='flex flex-col border-t border-[#3B75A9] lg:flex-row lg:items-start lg:space-x-16 py-4'>
         <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2'>
+          <p className='my-2 font-semibold'>What are you looking for?</p>
           <label htmlFor='keyword-input' className='sr-only'>
             Keyword Search
           </label>
-          <span className='absolute inset-y-0 left-2 flex items-center'>
-            <MagnifyingGlassIcon className='h-6 w-6 text-black' aria-hidden='true' />
-          </span>
-          <input
-            id='keyword-input'
-            type='text'
-            placeholder="I'm looking for..."
-            className='w-full bg-white border border-gray-300 rounded-full shadow-md pl-10 pr-4 py-2 text-left cursor-default text-black'
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
+          <div className='relative'>
+            <span className='absolute inset-y-0 left-2 flex items-center'>
+              <MagnifyingGlassIcon className='h-6 w-6 text-black' aria-hidden='true' />
+            </span>
+            <input
+              id='keyword-input'
+              type='text'
+              placeholder='Search for resources'
+              className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-4 py-2 text-left cursor-default text-black'
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
         </div>
-        <div className='relative flex-1 lg:w-1/2' ref={dropdownRef}>
+        <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2' ref={dropdownRef}>
+          <p className='my-2 font-semibold'>Where are you looking?</p>
           <label htmlFor='county-input' className='sr-only'>
             County Selector
           </label>
-          <span className='absolute inset-y-0 left-2 flex items-center'>
-            <MapIcon className='h-6 w-6 text-black' aria-hidden='true' />
-          </span>
-          <input
-            id='county-input'
-            type='text'
-            placeholder='I am looking in...'
-            className='w-full bg-white border border-gray-300 rounded-full shadow-md pl-10 pr-4 py-2 text-left cursor-default text-black'
-            value={countyQuery}
-            onChange={handleCountyQueryChange}
-            onFocus={() => setShowCountyOptions(true)}
-            onKeyDown={handleKeyDown}
-            ref={countyInputRef}
-          />
+          <div className='relative'>
+            <span className='absolute inset-y-0 left-2 flex items-center'>
+              <MapIcon className='h-6 w-6 text-black' aria-hidden='true' />
+            </span>
+            <input
+              id='county-input'
+              type='text'
+              placeholder='Enter county or zip code'
+              className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-4 py-2 text-left cursor-default text-black'
+              value={countyQuery}
+              onChange={handleCountyQueryChange}
+              onFocus={() => setShowCountyOptions(true)}
+              onKeyDown={handleKeyDown}
+              ref={countyInputRef}
+            />
+          </div>
 
           {showCountyOptions && (
             <div className='absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm'>
@@ -632,17 +642,18 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           )}
         </div>
       </div>
-      <div className='flex flex-col md:flex-row flex-wrap py-2 justify-start bg-[#EEF7FF]'>
+      <div>Try searching for popular resources</div>
+      <div className='flex flex-col border-b border-[#3B75A9] md:flex-row flex-wrap pt-2 pb-6 justify-start'>
         <div className='text-md flex flex-wrap'>
           {typeFilterData.options.map((option: FilterOption) => (
             <button
               aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
               key={option.value}
               onClick={() => toggleTypeSelection(option.value)}
-              className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 md:mb-1 rounded-full shadow-lg transition-colors whitespace-nowrap ${
+              className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 md:mb-1 rounded-full transition-colors whitespace-nowrap ${
                 selectedType.includes(option.value)
                   ? 'bg-[#1E79C8] text-white border border-white'
-                  : 'bg-[#092940] text-white border border-[#092940] md:hover:bg-[#3892E1]'
+                  : 'bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1]'
               } `}
             >
               {option.icon && <option.icon className='w-6 h-6 mr-2' />}
@@ -651,22 +662,49 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           ))}
         </div>
       </div>
-      <div className='pb-3 bg-[#EEF7FF]'>
-        <p className='ml-1 md:ml-2'>
-          Showing <strong>{filteredAndMappedResources.length}</strong> results. You are viewing
-          resources in <strong>{currentGeography}</strong>
-          {selectedType.length > 0 && (
-            <>
-              {' '}
-              that help you <strong>{currentType}</strong>
-            </>
-          )}
-        </p>
-      </div>
-      <hr className='border-black' />
+
       {selectedView === 'list' ? (
         <div>
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 py-10 space-y-0'>
+          <div className='flex justify-between items-center'>
+            <div>
+              <p className='my-2 md:mt-8 text-lg'>
+                Showing {filteredAndMappedResources.length} results for{' '}
+                <strong>{currentGeography}</strong>
+                {selectedType.length > 0 && (
+                  <>
+                    {' '}
+                    that help you <strong>{currentType}</strong>
+                  </>
+                )}
+              </p>
+            </div>
+            <div className='flex space-x-4'>
+              <label className='flex items-center space-x-2'>
+                <input
+                  type='radio'
+                  name='view'
+                  value='map'
+                  onChange={() => handleNavigate('map')}
+                  className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
+                />
+                <span className='text-[#092940]'>Map View</span>
+              </label>
+
+              <label className='flex items-center space-x-2'>
+                <input
+                  type='radio'
+                  name='view'
+                  value='list'
+                  checked={selectedView === 'list'}
+                  onChange={() => handleNavigate('list')}
+                  className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
+                />
+                <span className='text-[#092940]'>List View</span>
+              </label>
+            </div>
+          </div>
+
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 space-y-0'>
             {paginatedResources.map((resource, index) => (
               <AssetListItem key={index} resource={resource} />
             ))}
@@ -678,7 +716,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           />
         </div>
       ) : (
-        <div className='flex flex-col md:flex-row'>
+        <div className='flex flex-col md:flex-row my-8'>
           <div
             ref={mapContainer}
             className='map-container h-[50vh] md:h-[60vh] lg:h-[80vh] w-full md:w-[55vw] md:flex-2'
@@ -694,7 +732,43 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-2 md:py-0 md:p-4 w-full'
             style={{ flex: 1, overflowY: 'auto' }}
           >
-            <div className='space-y-4 py-6'>
+            <div className='flex space-x-4'>
+              <label className='flex items-center space-x-2'>
+                <input
+                  type='radio'
+                  name='view'
+                  value='map'
+                  onChange={() => handleNavigate('map')}
+                  className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
+                />
+                <span className='text-[#092940]'>Map View</span>
+              </label>
+
+              <label className='flex items-center space-x-2'>
+                <input
+                  type='radio'
+                  name='view'
+                  value='list'
+                  checked={selectedView === 'list'}
+                  onChange={() => handleNavigate('list')}
+                  className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
+                />
+                <span className='text-[#092940]'>List View</span>
+              </label>
+            </div>
+            <div className='pb-3'>
+              <p className='my-2 md:my-2 text-lg'>
+                Showing {filteredAndMappedResources.length} results for{' '}
+                <strong>{currentGeography}</strong>
+                {selectedType.length > 0 && (
+                  <>
+                    {' '}
+                    that help you <strong>{currentType}</strong>
+                  </>
+                )}
+              </p>
+            </div>
+            <div className='space-y-4'>
               {paginatedResources.map((resource, index) => (
                 <AssetListItem key={index} resource={resource} />
               ))}

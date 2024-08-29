@@ -11,7 +11,7 @@ input {
 }
 
 h2 {
-  font-size: 1rem !important;
+  font-size: 1.125rem !important;
 }
 
 .map-container {
@@ -41,17 +41,6 @@ h2 {
     margin-left: 5.5rem; /* md:mx-32 */
     margin-right: 5.5rem; /* md:mx-32 */
   }
-}
-
-/* Ensure all borders are black */
-.border-black {
-  border-color: black !important;
-}
-
-/* Address spacing around hr tags */
-hr {
-  margin: 0 !important;
-  border-top: 1px solid black !important;
 }
 
 /* global.css */
