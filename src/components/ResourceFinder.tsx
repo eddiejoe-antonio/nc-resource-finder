@@ -571,7 +571,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     <div className='w-full py-4'>
       <div className='flex flex-col border-t border-[#3B75A9] lg:flex-row lg:items-start lg:space-x-16 py-4'>
         <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2'>
-          <p className='my-2 font-semibold'>What are you looking for?</p>
+          <p className='my-2 font-semibold text-lg'>What are you looking for?</p>
           <label htmlFor='keyword-input' className='sr-only'>
             Keyword Search
           </label>
@@ -590,7 +590,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           </div>
         </div>
         <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2' ref={dropdownRef}>
-          <p className='my-2 font-semibold'>Where are you looking?</p>
+          <p className='my-2 font-semibold text-lg'>Where are you looking?</p>
           <label htmlFor='county-input' className='sr-only'>
             County Selector
           </label>
@@ -642,24 +642,28 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           )}
         </div>
       </div>
-      <div>Try searching for popular resources</div>
-      <div className='flex flex-col border-b border-[#3B75A9] md:flex-row flex-wrap pt-2 pb-6 justify-start'>
-        <div className='text-md flex flex-wrap'>
-          {typeFilterData.options.map((option: FilterOption) => (
-            <button
-              aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
-              key={option.value}
-              onClick={() => toggleTypeSelection(option.value)}
-              className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 md:mb-1 rounded-full transition-colors whitespace-nowrap ${
-                selectedType.includes(option.value)
-                  ? 'bg-[#1E79C8] text-white border border-white'
-                  : 'bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1]'
-              } `}
-            >
-              {option.icon && <option.icon className='w-6 h-6 mr-2' />}
-              {option.label}
-            </button>
-          ))}
+      <div className='border-b border-[#3B75A9] pt-2 pb-6 justify-start'>
+        <div className='pb-2'>
+          <p>Try searching for popular resources</p>
+        </div>
+        <div>
+          <div className='text-md flex flex-wrap space-x-2'>
+            {typeFilterData.options.map((option: FilterOption) => (
+              <button
+                aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
+                key={option.value}
+                onClick={() => toggleTypeSelection(option.value)}
+                className={`flex items-center px-6 py-2 mb-2 md:mb-1 rounded-full transition-colors whitespace-nowrap ${
+                  selectedType.includes(option.value)
+                    ? 'bg-[#1E79C8] text-white border border-white'
+                    : 'bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1]'
+                } `}
+              >
+                {option.icon && <option.icon className='w-6 h-6 mr-2' />}
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

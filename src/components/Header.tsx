@@ -41,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ setIsModalOpen }) => {
     <div className='w-full'>
       <div className='flex items-center justify-between'>
         <div className='mt-16 md:mb-12 col-start-1 col-span-8 gap-0 text-left'>
-          <h1 className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-black font-['Source Sans Pro']">
+          <h1 className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-semibold font-['Source Sans Pro']">
             Find Technology Resources{` `}
           </h1>
           <h1 className="block md:inline text-[#3B75A9] text-[1.5rem] md:text-[2rem] font-light font-['Source Sans Pro']">
@@ -55,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ setIsModalOpen }) => {
             role='alertdialog'
             aria-label='Contribute to the North Carolina Resource Finder'
             onClick={handleAboutClick}
-            className={`flex items-center px-4 py-2 rounded-full shadow-md cursor-pointer transition ease-in-out duration-300 ${
+            className={`flex items-center px-4 py-2 rounded-full cursor-pointer transition ease-in-out duration-300 ${
               isModalOpen
                 ? 'bg-[#BC2442] text-[#FFE9EE]'
                 : 'bg-[#FFE9EE] text-[#BC2442] hover:bg-[#BC2442] hover:text-[#FFE9EE]'
