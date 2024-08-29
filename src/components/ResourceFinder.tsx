@@ -250,7 +250,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
                 // Set the tooltip content
                 tooltip
                   .setLngLat(coordinates)
-                  .setHTML(`<strong>${feature.properties.name}</strong>`)
+                  .setHTML(
+                    `<strong>${feature.properties.name}</strong><p>${feature.properties.address_geocode}</p>`,
+                  )
                   .addTo(mapInstance.current!);
               }
             });
@@ -260,13 +262,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
               tooltip.remove();
             });
           }
-
-          return () => {
-            if (mapInstance.current) {
-              mapInstance.current.remove();
-              mapInstance.current = null;
-            }
-          };
 
           mapInstance.current.on('click', 'counties-layer', (e) => {
             if (e.features && e.features.length > 0) {
@@ -624,7 +619,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
                         : 'font-normal'
                     }`}
                   >
-                    {option.label}
+                    {option.label} County
                   </span>
                   {selectedCounty && selectedCounty.value === option.value && (
                     <span className='absolute inset-y-0 left-0 flex items-center pl-3'>

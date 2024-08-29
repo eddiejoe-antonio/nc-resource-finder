@@ -64,6 +64,7 @@ export const fetchGeoResources = async (): Promise<GeoJSON.FeatureCollection> =>
       },
       properties: {
         name: resource.name,
+        address_geocode: resource.address_geocode,
         // Add other relevant properties here
       },
     })),

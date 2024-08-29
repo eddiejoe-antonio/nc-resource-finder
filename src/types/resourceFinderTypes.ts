@@ -15,6 +15,7 @@ export interface Resource {
   OrganizationTypeBroadsector?: string; // Define this property if it's missing
   long: number;
   lat: number;
+  address_geocode?: string;
 }
 
 export interface AssetListItemProps {
