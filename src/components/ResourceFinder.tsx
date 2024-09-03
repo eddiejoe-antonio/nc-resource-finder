@@ -122,20 +122,21 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             url: 'mapbox://eddiejoeantonio.5kdb3ae2',
           });
 
+          mapInstance.current.addSource('zipcodes', {
+            type: 'vector',
+            url: 'mapbox://eddiejoeantonio.23a15qmt',
+          });
+
           mapInstance.current.addLayer({
             id: 'counties-layer',
             type: 'fill',
             source: 'counties',
             'source-layer': 'ncgeo',
             paint: {
-              'fill-color': '#acacac',
-              'fill-opacity': 0.5,
+              'fill-color': '#acacac', // Default color for other counties
+              'fill-opacity': 0.0, // Initially transparent
               'fill-outline-color': 'white',
             },
-          });
-          mapInstance.current.addSource('zipcodes', {
-            type: 'vector',
-            url: 'mapbox://eddiejoeantonio.23a15qmt',
           });
 
           mapInstance.current.addLayer({
@@ -144,8 +145,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             source: 'zipcodes',
             'source-layer': 'NC_Zipcodes',
             paint: {
-              'fill-color': '#000',
-              'fill-opacity': 0.0,
+              'fill-color': '#acacac', // Default color for zipcodes
+              'fill-opacity': 0.0, // Initially transparent
               'fill-outline-color': 'white',
             },
           });
@@ -201,19 +202,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               tooltip.remove();
             });
           }
-
-          mapInstance.current.on('click', 'counties-layer', (e) => {
-            if (e.features && e.features.length > 0) {
-              const feature = e.features[0];
-              if (feature.properties) {
-                const countyName = feature.properties['County'];
-                if (countyName) {
-                  const county = { value: countyName, label: countyName };
-                  handleCountySelection(county);
-                }
-              }
-            }
-          });
 
           // Populate the county list for keyboard navigation
           const counties = geographyFilterData.options.map((option) => ({
@@ -284,12 +272,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     setCurrentPage(1);
   }, [selectedView]);
 
-  const handleCountySelection = (county: County) => {
-    setSelectedCounty((prevCounty) => {
-      if (prevCounty && prevCounty.value === county.value) {
+  const handleCountySelection = (geography: County) => {
+    setSelectedCounty((prevGeography) => {
+      if (prevGeography && prevGeography.value === geography.value) {
         setCountyQuery('');
-        // Reset to the overall boundaries
+        // Reset to the overall boundaries and make all geographies transparent again
         if (mapInstance.current) {
+          mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', 0.0);
+          mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', 0.0);
           mapInstance.current.flyTo({
             center: [-79.0193, 35.7596],
             zoom: 6,
@@ -297,11 +287,80 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         }
         return null;
       }
-      setCountyQuery(county.label);
-      return county;
+      setCountyQuery(geography.label);
+      return geography;
     });
+
     setShowCountyOptions(false);
     setCurrentPage(1);
+
+    if (mapInstance.current) {
+      const bounds = new mapboxgl.LngLatBounds();
+
+      if (geography.type === 'County') {
+        // Query the selected county and set bounds
+        const features = mapInstance.current.querySourceFeatures('counties', {
+          sourceLayer: 'ncgeo',
+          filter: ['==', 'County', geography.value],
+        });
+
+        if (features.length > 0) {
+          features.forEach((feature) => {
+            if (feature.geometry.type === 'Polygon') {
+              (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                bounds.extend(coord);
+              });
+            }
+          });
+
+          if (!bounds.isEmpty()) {
+            mapInstance.current.fitBounds(bounds, { padding: 20 });
+          }
+
+          // Darken other counties and keep the selected county transparent
+          mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
+            'case',
+            ['==', ['get', 'County'], geography.value],
+            0.0, // Selected county stays transparent
+            0.5, // Other counties darken
+          ]);
+
+          // Keep ZIP codes layer fully transparent
+          mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', 0.0);
+        }
+      } else if (geography.type === 'ZipCode') {
+        // Query the selected ZIP code and set bounds
+        const features = mapInstance.current.querySourceFeatures('zipcodes', {
+          sourceLayer: 'NC_Zipcodes',
+          filter: ['==', 'ZCTA5CE20', geography.value],
+        });
+
+        if (features.length > 0) {
+          features.forEach((feature) => {
+            if (feature.geometry.type === 'Polygon') {
+              (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                bounds.extend(coord);
+              });
+            }
+          });
+
+          if (!bounds.isEmpty()) {
+            mapInstance.current.fitBounds(bounds, { padding: 20 });
+          }
+
+          // Darken other ZIP codes and keep the selected ZIP code transparent
+          mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', [
+            'case',
+            ['==', ['get', 'ZCTA5CE20'], geography.value],
+            0.0, // Selected ZIP code stays transparent
+            0.5, // Other ZIP codes darken
+          ]);
+
+          // Keep counties layer fully transparent
+          mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', 0.0);
+        }
+      }
+    }
   };
 
   const toggleTypeSelection = (type: string) => {
