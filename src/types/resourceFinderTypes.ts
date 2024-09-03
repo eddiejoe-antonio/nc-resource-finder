@@ -1,23 +1,39 @@
 // src/types/ResourceFinder.ts
 
+import type GeoJSON from 'geojson';
+
 export enum ViewType {
   GRID = 1,
   LIST = 2,
 }
-// In your types/ResourceFinder.ts file, or wherever you define your types
+
+// The existing Resource type can be maintained if you still use it in other parts of the application.
 export interface Resource {
   name: string;
   geography?: string;
   zip_code?: string;
-  primary_type?: string; // Now Type can be either a string or an array of strings
+  primary_type?: string;
   website?: string;
-  description?: string; // Define this property if it's missing
-  OrganizationTypeBroadsector?: string; // Define this property if it's missing
+  description?: string;
   long: number;
   lat: number;
   address_geocode?: string;
+  googlemaps_link?: string;
 }
 
+// src/types/ResourceFinder.ts
 export interface AssetListItemProps {
-  resource: Resource;
+  resource: GeoJSON.Feature<
+    GeoJSON.Point,
+    {
+      name: string;
+      geography?: string;
+      zip_code?: string;
+      primary_type?: string;
+      website?: string;
+      description?: string;
+      address_geocode?: string;
+      googlemaps_link?: string;
+    }
+  >;
 }

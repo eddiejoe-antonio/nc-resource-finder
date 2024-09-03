@@ -67,36 +67,12 @@ const Header: React.FC<HeaderProps> = ({ setIsModalOpen }) => {
         </div>
       </div>
       <div className='w-full'>
-        <div className='pb-4'>
+        <div className='pb-2'>
           <p className='text-lg'>
             Use this tool to find resources like public Wi-Fi sites, technical assistance and
             digital classes across the state of North Carolina.
           </p>
         </div>
-        {/* <div className='col-start-1 col-span-12 md:col-start-10 md:col-span-3 flex justify-between md:justify-center'>
-          <button
-            className={`flex-grow flex items-center justify-center shadow-md gap-2 py-1 md:h-14 rounded-l-lg ${
-              selectedView === 'map'
-                ? 'bg-[#1E79C8] text-white'
-                : 'bg-[#092940] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
-            }`}
-            onClick={() => handleNavigate('map')}
-          >
-            <MapPinIcon className='h-5 w-5 md:h-8 md:w-8' />
-            Map
-          </button>
-          <button
-            className={`flex-grow flex items-center justify-center shadow-md gap-2 py-1 md:h-14 rounded-r-lg ${
-              selectedView === 'list'
-                ? 'bg-[#1E79C8] text-white'
-                : 'bg-[#092940] hover:bg-[#3892E1] text-white transition ease-in-out duration-300'
-            }`}
-            onClick={() => handleNavigate('list')}
-          >
-            <ListBulletIcon className='h-5 w-5 md:h-10 md:w-10' />
-            List
-          </button>
-        </div> */}
       </div>
 
       {/* About Modal */}

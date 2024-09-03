@@ -5,32 +5,29 @@ import AssetListItem from './AssetListItem';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Position } from 'geojson';
 import Pagination from './Pagination';
-import { fetchResources, fetchGeoResources } from '../utils/apiService';
-import { Resource } from '../types/resourceFinderTypes'; // Import the Resource type
+import { fetchGeoResources } from '../utils/apiService';
+import type GeoJSON from 'geojson';
 import Fuse from 'fuse.js';
-import type GeoJSON from 'geojson'; // Ensure you have the 'geojson' types installed
+
+mapboxgl.accessToken =
+  'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
 
 type GeoJsonFeatureCollection = GeoJSON.FeatureCollection<
   GeoJSON.Geometry,
   GeoJSON.GeoJsonProperties
 >;
 
-mapboxgl.accessToken =
-  'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
-
 interface County {
   value: string;
   label: string;
+  type?: string;
 }
-
 interface ResourceFinderProps {
   isModalOpen: boolean;
 }
 
 const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
-  const [resources, setResources] = useState<Resource[]>([]);
   const [geoResource, setGeoResource] = useState<GeoJsonFeatureCollection>({
     type: 'FeatureCollection',
     features: [],
@@ -55,6 +52,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const srCountyRef = useRef<HTMLDivElement>(null); // Ref for screen reader announcement
   const [selectedView, setSelectedView] = useState('list');
   const navigate = useNavigate();
+
   const handleNavigate = (view: string) => {
     setSelectedView(view);
     navigate('/');
@@ -66,9 +64,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchResources();
         const geoData = await fetchGeoResources();
-        setResources(data);
         setGeoResource(geoData);
       } catch (error) {
         console.error('Error fetching resources:', error);
@@ -119,102 +115,40 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       const navControl = new mapboxgl.NavigationControl();
       mapInstance.current.addControl(navControl, 'top-right');
 
-      // Handle zoom interaction to avoid selecting a county
-      const zoomInButton = mapContainer.current.querySelector('.mapboxgl-ctrl-zoom-in');
-      const zoomOutButton = mapContainer.current.querySelector('.mapboxgl-ctrl-zoom-out');
-      const compassButton = mapContainer.current.querySelector('.mapboxgl-ctrl-compass');
-
-      if (zoomInButton) {
-        zoomInButton.addEventListener('keydown', (e) => {
-          if ((e as KeyboardEvent).key === 'Enter') {
-            e.stopPropagation();
-            mapInstance.current?.zoomIn();
-          }
-        });
-      }
-
-      if (zoomOutButton) {
-        zoomOutButton.addEventListener('keydown', (e) => {
-          if ((e as KeyboardEvent).key === 'Enter') {
-            e.stopPropagation();
-            mapInstance.current?.zoomOut();
-          }
-        });
-      }
-
-      if (compassButton) {
-        compassButton.addEventListener('keydown', (e) => {
-          if ((e as KeyboardEvent).key === 'Enter') {
-            e.stopPropagation();
-            mapInstance.current?.zoomIn();
-          }
-        });
-      }
-
       mapInstance.current.on('load', () => {
         if (mapInstance.current) {
           mapInstance.current.addSource('counties', {
             type: 'vector',
             url: 'mapbox://eddiejoeantonio.5kdb3ae2',
           });
+
+          mapInstance.current.addLayer({
+            id: 'counties-layer',
+            type: 'fill',
+            source: 'counties',
+            'source-layer': 'ncgeo',
+            paint: {
+              'fill-color': '#acacac',
+              'fill-opacity': 0.5,
+              'fill-outline-color': 'white',
+            },
+          });
           mapInstance.current.addSource('zipcodes', {
             type: 'vector',
             url: 'mapbox://eddiejoeantonio.23a15qmt',
           });
 
-          const layers = mapInstance.current.getStyle().layers;
-          let firstPlaceLabelId;
-          for (const layer of layers) {
-            if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
-              firstPlaceLabelId = layer.id;
-              break;
-            }
-          }
-
-          mapInstance.current.addLayer(
-            {
-              id: 'counties-layer',
-              type: 'fill',
-              source: 'counties',
-              'source-layer': 'ncgeo',
-              paint: {
-                'fill-color': '#acacac',
-                'fill-opacity': 0.5,
-                'fill-outline-color': 'white',
-              },
+          mapInstance.current.addLayer({
+            id: 'zipcodes-layer',
+            type: 'fill',
+            source: 'zipcodes',
+            'source-layer': 'NC_Zipcodes',
+            paint: {
+              'fill-color': '#000',
+              'fill-opacity': 0.0,
+              'fill-outline-color': 'white',
             },
-            firstPlaceLabelId,
-          );
-          // mapInstance.current.addLayer(
-          //   {
-          //     id: 'zipcode-layer',
-          //     type: 'fill',
-          //     source: 'zipcodes',
-          //     'source-layer': 'NC_Zipcodes',
-          //     paint: {
-          //       'fill-color': '#6a3d3d',
-          //       'fill-opacity': 0.5,
-          //       'fill-outline-color': 'white',
-          //     },
-          //   },
-          //   firstPlaceLabelId,
-          // );
-
-          mapInstance.current.addLayer(
-            {
-              id: 'counties-layer-hover',
-              type: 'fill',
-              source: 'counties',
-              'source-layer': 'ncgeo',
-              paint: {
-                'fill-color': 'rgba(0,0,0,0)',
-                'fill-outline-color': '#BC2442',
-                'fill-opacity': 1.0,
-              },
-              filter: ['==', 'County', ''],
-            },
-            firstPlaceLabelId,
-          );
+          });
 
           if (geoResource) {
             mapInstance.current.addSource('geojson-data', {
@@ -281,35 +215,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             }
           });
 
-          mapInstance.current.on('mouseenter', 'counties-layer', () => {
-            if (!isMobile) {
-              mapInstance.current!.getCanvas().style.cursor = 'pointer';
-            }
-          });
-
-          mapInstance.current.on('mouseleave', 'counties-layer', () => {
-            if (!isMobile) {
-              mapInstance.current!.getCanvas().style.cursor = '';
-              mapInstance.current!.setFilter('counties-layer-hover', ['==', 'County', '']);
-            }
-          });
-
-          mapInstance.current.on('mousemove', 'counties-layer', (e) => {
-            if (!isMobile && e.features && e.features.length > 0) {
-              const feature = e.features[0];
-              if (feature.properties) {
-                const countyName = feature.properties['County'];
-                if (countyName) {
-                  mapInstance.current!.setFilter('counties-layer-hover', [
-                    '==',
-                    'County',
-                    countyName,
-                  ]);
-                }
-              }
-            }
-          });
-
           // Populate the county list for keyboard navigation
           const counties = geographyFilterData.options.map((option) => ({
             value: option.value,
@@ -329,15 +234,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         mapInstance.current = null;
       }
     };
-  }, [selectedView, isMobile]);
+  }, [selectedView, isMobile, geoResource]);
 
   useEffect(() => {
     if (mapInstance.current && mapInstance.current.isStyleLoaded()) {
-      mapInstance.current.setPaintProperty('counties-layer', 'fill-color', [
+      mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
         'case',
         ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
-        'rgba(255, 255, 255, 0)',
-        '#adadad',
+        0,
+        0.5,
       ]);
 
       if (selectedCounty) {
@@ -350,8 +255,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         if (features.length > 0) {
           features.forEach((feature) => {
             if (feature.geometry.type === 'Polygon') {
-              (feature.geometry.coordinates[0] as Position[]).forEach((coord) => {
-                bounds.extend(coord as mapboxgl.LngLatLike);
+              (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                bounds.extend(coord);
               });
             }
           });
@@ -479,8 +384,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             const bounds = new mapboxgl.LngLatBounds();
             features.forEach((feature) => {
               if (feature.geometry.type === 'Polygon') {
-                (feature.geometry.coordinates[0] as Position[]).forEach((coord) => {
-                  bounds.extend(coord as mapboxgl.LngLatLike);
+                (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                  bounds.extend(coord);
                 });
               }
             });
@@ -513,7 +418,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       const selectedCounty = countyList[currentCountyIndex];
       mapInstance.current.setFilter('counties-layer-hover', ['==', 'County', selectedCounty.value]);
     }
-  }, [currentCountyIndex]);
+  }, [countyList, currentCountyIndex]);
 
   const scrollToTop = () => {
     if (assetSectionRef.current) {
@@ -526,7 +431,12 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     scrollToTop();
   };
 
-  const currentGeography = selectedCounty ? `${selectedCounty.label} County` : 'North Carolina';
+  const currentGeography = selectedCounty
+    ? selectedCounty.type === 'County'
+      ? `${selectedCounty.label} County`
+      : selectedCounty.label
+    : 'North Carolina';
+
   const currentType =
     selectedType.length > 0
       ? selectedType
@@ -535,27 +445,37 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       : 'with technical issues';
 
   const fuseOptions = {
-    keys: ['name', 'description', 'primary_type', 'geography'],
+    keys: [
+      'properties.name',
+      'properties.description',
+      'properties.primary_type',
+      'properties.geography',
+    ],
     threshold: 0.3,
   };
 
-  const fuse = new Fuse(resources, fuseOptions);
+  const fuse = new Fuse(geoResource.features, fuseOptions);
 
   const filteredResources = searchQuery
     ? fuse.search(searchQuery).map((result) => result.item)
-    : resources;
+    : geoResource.features;
 
   const filteredAndMappedResources = filteredResources
     .map((resource) => ({
       ...resource,
-      Type: resource.primary_type
-        ? resource.primary_type.split(',').map((type) => type.trim())
+      Type: resource.properties?.primary_type
+        ? resource.properties.primary_type.split(',').map((type: string) => type.trim())
         : [],
-      Geography: resource.geography ? resource.geography.split(',').map((geo) => geo.trim()) : [],
+      Geography: resource.properties?.geography
+        ? resource.properties.geography.split(',').map((geo: string) => geo.trim())
+        : [],
+      ZipCode: resource.properties?.zip_code ? String(resource.properties.zip_code) : '',
     }))
     .filter((resource) => {
       const countyMatch =
-        !selectedCounty || resource.Geography.includes(selectedCounty?.value || '');
+        !selectedCounty ||
+        (selectedCounty.type === 'County' && resource.Geography.includes(selectedCounty.value)) ||
+        (selectedCounty.type === 'ZipCode' && resource.ZipCode.includes(selectedCounty.value));
       const typeMatch =
         selectedType.length === 0 || selectedType.some((type) => resource.Type.includes(type));
       return countyMatch && typeMatch;
@@ -629,7 +549,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
                         : 'font-normal'
                     }`}
                   >
-                    {option.label} County
+                    {option.label} {option.type === 'County' ? 'County' : ''}
                   </span>
                   {selectedCounty && selectedCounty.value === option.value && (
                     <span className='absolute inset-y-0 left-0 flex items-center pl-3'>

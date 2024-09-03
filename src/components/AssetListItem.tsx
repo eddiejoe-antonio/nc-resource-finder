@@ -26,40 +26,40 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   return (
     <div className='flex flex-col border-b border-[#3B75A9] transition-all ease-in-out duration-300'>
       <div className='text-black py-2'>
-        <h2 className='mt-1 font-bold text-md'>{resource.name}</h2>
+        <h2 className='mt-1 font-bold text-md'>{resource.properties.name}</h2>
       </div>
       <div className=''>
         <div className='flex items-center text-sm py-2 text-[#0E3052]'>
           <MapPinIcon className='h-6 w-6 mr-2 flex-shrink-0 [stroke-width:2]' />
-          <div className='overflow-x-auto flex-grow min-w-0'>{resource.geography}</div>
+          <div className='overflow-x-auto flex-grow min-w-0'>{resource.properties.geography}</div>
         </div>
       </div>
       <div className=''>
         <div className='flex items-center text-sm py-2 text-[#0E3052]'>
           <BookmarkIcon className='h-6 w-6 mr-2 flex-shrink-0 [stroke-width:2]' />
           <div className='flex-grow min-w-0 whitespace-normal break-words'>
-            {formatType(resource.primary_type ?? '')}
+            {formatType(resource.properties.primary_type ?? '')}
           </div>
         </div>
       </div>
       <div className=''>
         <div className='flex items-center text-sm py-2 text-[#0E3052]'>
           <LinkIcon className='h-6 w-6 mr-2 flex-shrink-0 [stroke-width:2]' />
-          {resource.website && (
+          {resource.properties.website && (
             <a
-              href={formatWebsite(resource.website)}
+              href={formatWebsite(resource.properties.website)}
               target='_blank'
               rel='noopener noreferrer'
               className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300 flex-grow min-w-0 whitespace-normal break-words'
             >
-              {resource.website}
+              {resource.properties.website}
             </a>
           )}
         </div>
       </div>
       <div className='pt-4 pb-6'>
         <button
-          aria-label={`Learn more about ${resource.name}`}
+          aria-label={`Learn more about ${resource.properties.name}`}
           onClick={() => setShowMore(!showMore)}
           className='border border-[#1E79C8] text-[#1E79C8] hover:bg-[#3892E1] hover:text-white text-sm cursor-pointer px-12 py-2 rounded-full transition-colors duration-300 flex items-center justify-center gap-2 font-semibold'
         >
@@ -69,11 +69,18 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
           <div className='my-4 text-md'>
             <div className='my-4'>
               <p className='my-2 font-semibold'>Description</p>
-              <p className='whitespace-normal break-words'>{resource.description}</p>
+              <p className='whitespace-normal break-words'>{resource.properties.description}</p>
             </div>
             <div className='my-4'>
               <p className='my-2 font-semibold'>Address</p>
-              <p className='whitespace-normal break-words'>{resource.address_geocode}</p>
+              <a
+                href={resource.properties.googlemaps_link}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300 flex-grow min-w-0 whitespace-normal break-words'
+              >
+                {resource.properties.address_geocode}
+              </a>
             </div>
           </div>
         )}
