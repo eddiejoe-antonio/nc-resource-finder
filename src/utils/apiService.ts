@@ -59,7 +59,7 @@ export const fetchGeoResources = async (): Promise<
   > = {
     type: 'FeatureCollection',
     features: sortedData
-      .filter((resource) => resource.long !== null && resource.lat !== null) // Filter out null coordinates
+      .filter((resource) => resource !== null && resource !== null) // Filter out null coordinates
       .map((resource) => ({
         type: 'Feature',
         geometry: {

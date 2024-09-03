@@ -12,7 +12,7 @@ export interface Resource {
   name: string;
   geography?: string;
   zip_code?: string;
-  primary_type?: string;
+  primary_type: string;
   website?: string;
   description?: string;
   long: number;
@@ -21,7 +21,6 @@ export interface Resource {
   googlemaps_link?: string;
 }
 
-// src/types/ResourceFinder.ts
 export interface AssetListItemProps {
   resource: GeoJSON.Feature<
     GeoJSON.Point,

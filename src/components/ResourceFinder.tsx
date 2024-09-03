@@ -461,23 +461,52 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     : geoResource.features;
 
   const filteredAndMappedResources = filteredResources
-    .map((resource) => ({
-      ...resource,
-      Type: resource.properties?.primary_type
-        ? resource.properties.primary_type.split(',').map((type: string) => type.trim())
-        : [],
-      Geography: resource.properties?.geography
-        ? resource.properties.geography.split(',').map((geo: string) => geo.trim())
-        : [],
-      ZipCode: resource.properties?.zip_code ? String(resource.properties.zip_code) : '',
-    }))
+    // Step 1: Filter out features that are not Points
+    .filter((resource) => resource.geometry.type === 'Point')
+    // Step 2: Map the filtered features to the expected structure
+    .map((resource) => {
+      // Explicitly type the properties
+      const properties: {
+        name: string;
+        geography?: string;
+        zip_code?: string;
+        primary_type?: string;
+        website?: string;
+        description?: string;
+        address_geocode?: string;
+        googlemaps_link?: string;
+      } = {
+        name: resource.properties?.name || '',
+        geography: resource.properties?.geography,
+        zip_code: resource.properties?.zip_code ? String(resource.properties.zip_code) : undefined,
+        primary_type: resource.properties?.primary_type,
+        website: resource.properties?.website,
+        description: resource.properties?.description,
+        address_geocode: resource.properties?.address_geocode,
+        googlemaps_link: resource.properties?.googlemaps_link,
+      };
+
+      // Return the correctly typed GeoJSON feature
+      return {
+        type: 'Feature',
+        geometry: resource.geometry as GeoJSON.Point, // Explicitly assert as GeoJSON.Point
+        properties: properties,
+      } as GeoJSON.Feature<GeoJSON.Point, typeof properties>;
+    })
+    // Step 3: Additional filtering based on other criteria
     .filter((resource) => {
       const countyMatch =
         !selectedCounty ||
-        (selectedCounty.type === 'County' && resource.Geography.includes(selectedCounty.value)) ||
-        (selectedCounty.type === 'ZipCode' && resource.ZipCode.includes(selectedCounty.value));
+        (selectedCounty.type === 'County' &&
+          resource.properties.geography?.includes(selectedCounty.value)) ||
+        (selectedCounty.type === 'ZipCode' &&
+          resource.properties.zip_code &&
+          resource.properties.zip_code.includes(selectedCounty.value));
+
       const typeMatch =
-        selectedType.length === 0 || selectedType.some((type) => resource.Type.includes(type));
+        selectedType.length === 0 ||
+        selectedType.some((type) => resource.properties.primary_type?.includes(type));
+
       return countyMatch && typeMatch;
     });
 
