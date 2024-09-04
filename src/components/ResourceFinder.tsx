@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, MapIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, MapIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'; // Added XMarkIcon
 import AssetListItem from './AssetListItem';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
 import mapboxgl from 'mapbox-gl';
@@ -43,6 +43,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const [isMapFocused, setIsMapFocused] = useState<boolean>(false);
   const [countyList, setCountyList] = useState<County[]>([]);
   const [currentCountyIndex, setCurrentCountyIndex] = useState<number>(-1);
+  const [selectedAsset, setSelectedAsset] = useState<GeoJSON.Feature | null>(null); // New state for selected asset
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
@@ -57,6 +58,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     setSelectedView(view);
     navigate('/');
   };
+
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
   );
@@ -88,6 +90,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       if (event.key === 'Escape' && !isModalOpen) {
         setSelectedType([]);
         setCurrentPage(1);
+        setSelectedAsset(null); // Deselect the asset on escape
       }
     };
     window.addEventListener('keydown', handleEscapeKey);
@@ -200,6 +203,28 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             // Remove the tooltip on mouseleave
             mapInstance.current!.on('mouseleave', 'geojson-layer', () => {
               tooltip.remove();
+            });
+
+            // Add click event to zoom to asset and filter the list
+            mapInstance.current.on('click', 'geojson-layer', (e) => {
+              const clickedFeature = e.features?.[0];
+              if (clickedFeature) {
+                const geometry = clickedFeature.geometry;
+
+                // Ensure the geometry is a Point before accessing coordinates
+                if (geometry.type === 'Point') {
+                  const coordinates = geometry.coordinates as [number, number];
+
+                  // Zoom to the clicked feature
+                  mapInstance.current!.flyTo({
+                    center: coordinates,
+                    zoom: 14,
+                  });
+
+                  // Set the clicked asset as selected and filter the list
+                  setSelectedAsset(clickedFeature);
+                }
+              }
             });
           }
 
@@ -490,18 +515,38 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     scrollToTop();
   };
 
+  // Inside the ResourceFinder component, before the return statement
   const currentGeography = selectedCounty
     ? selectedCounty.type === 'County'
       ? `${selectedCounty.label} County`
       : selectedCounty.label
     : 'North Carolina';
 
-  const currentType =
-    selectedType.length > 0
-      ? selectedType
-          .map((type) => typeFilterData.options.find((option) => option.value === type)?.label)
-          .join(', ')
-      : 'with technical issues';
+  const getSummaryText = () => {
+    if (selectedAsset) {
+      return <>Showing {selectedAsset.properties?.name}</>;
+    } else {
+      return (
+        <>
+          Showing {filteredAndMappedResources.length} results for{' '}
+          <strong>{currentGeography}</strong>
+          {selectedType.length > 0 && (
+            <>
+              {' '}
+              that help you <strong>{selectedType.join(', ')}</strong>
+            </>
+          )}
+        </>
+      );
+    }
+  };
+
+  // // Filter resources based on selected asset
+  // const filteredResources = selectedAsset
+  //   ? geoResource.features.filter(
+  //       (resource) => resource.properties?.name === selectedAsset.properties?.name,
+  //     )
+  //   : geoResource.features;
 
   const fuseOptions = {
     keys: [
@@ -515,16 +560,20 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
   const fuse = new Fuse(geoResource.features, fuseOptions);
 
-  const filteredResources = searchQuery
+  // First, apply search filtering
+  const searchFilteredResources = searchQuery
     ? fuse.search(searchQuery).map((result) => result.item)
     : geoResource.features;
 
-  const filteredAndMappedResources = filteredResources
-    // Step 1: Filter out features that are not Points
+  const filteredAndMappedResources = (
+    selectedAsset
+      ? [selectedAsset] // If an asset is selected, only show that asset
+      : searchFilteredResources
+  ) // Otherwise, show filtered results
+    // Step 1: Filter out features that are not Points and explicitly cast to GeoJSON.Point
     .filter((resource) => resource.geometry.type === 'Point')
-    // Step 2: Map the filtered features to the expected structure
     .map((resource) => {
-      // Explicitly type the properties
+      // Step 2: Ensure the resource properties match the expected structure
       const properties: {
         name: string;
         geography?: string;
@@ -545,14 +594,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         googlemaps_link: resource.properties?.googlemaps_link,
       };
 
-      // Return the correctly typed GeoJSON feature
+      // Step 3: Return the resource as a GeoJSON feature with Point type and correct properties
       return {
         type: 'Feature',
-        geometry: resource.geometry as GeoJSON.Point, // Explicitly assert as GeoJSON.Point
+        geometry: resource.geometry as GeoJSON.Point, // Explicitly cast to GeoJSON.Point
         properties: properties,
       } as GeoJSON.Feature<GeoJSON.Point, typeof properties>;
     })
-    // Step 3: Additional filtering based on other criteria
+    // Step 4: Additional filtering based on other criteria like county and type
     .filter((resource) => {
       const countyMatch =
         !selectedCounty ||
@@ -574,10 +623,17 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
+  // Add clear functionality for input fields
+  const clearSearchQuery = () => setSearchQuery('');
+  const clearCountyQuery = () => {
+    setCountyQuery('');
+    setSelectedCounty(null);
+  };
 
   return (
     <div className='w-full py-4'>
       <div className='flex flex-col border-t border-[#3B75A9] lg:flex-row lg:items-start lg:space-x-16 py-4'>
+        {/* Search Input */}
         <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2'>
           <p className='my-2 font-semibold text-lg'>What are you looking for?</p>
           <label htmlFor='keyword-input' className='sr-only'>
@@ -591,12 +647,29 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               id='keyword-input'
               type='text'
               placeholder='Search for resources'
-              className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-4 py-2 text-left cursor-default text-black'
+              className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-10 py-2 text-left cursor-default text-black'
               value={searchQuery}
               onChange={handleSearchChange}
             />
+            {/* Clear Icon for Search */}
+            {searchQuery && (
+              <button
+                className='absolute inset-y-0 right-2 flex items-center cursor-pointer'
+                onClick={clearSearchQuery}
+                onKeyDown={(e) => e.key === 'Enter' && clearSearchQuery()}
+                tabIndex={0} // Make the X button accessible
+                aria-label='Clear search input'
+              >
+                <XMarkIcon
+                  className='h-6 w-6 text-gray-400 hover:text-gray-600'
+                  aria-hidden='true'
+                />
+              </button>
+            )}
           </div>
         </div>
+
+        {/* County Input */}
         <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2' ref={dropdownRef}>
           <p className='my-2 font-semibold text-lg'>Where are you looking?</p>
           <label htmlFor='county-input' className='sr-only'>
@@ -610,13 +683,28 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               id='county-input'
               type='text'
               placeholder='Enter county or zip code'
-              className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-4 py-2 text-left cursor-default text-black'
+              className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-10 py-2 text-left cursor-default text-black'
               value={countyQuery}
               onChange={handleCountyQueryChange}
               onFocus={() => setShowCountyOptions(true)}
               onKeyDown={handleKeyDown}
               ref={countyInputRef}
             />
+            {/* Clear Icon for County */}
+            {countyQuery && (
+              <button
+                className='absolute inset-y-0 right-2 flex items-center cursor-pointer'
+                onClick={clearCountyQuery}
+                onKeyDown={(e) => e.key === 'Enter' && clearCountyQuery()}
+                tabIndex={0} // Make the X button accessible
+                aria-label='Clear county input'
+              >
+                <XMarkIcon
+                  className='h-6 w-6 text-gray-400 hover:text-gray-600'
+                  aria-hidden='true'
+                />
+              </button>
+            )}
           </div>
 
           {showCountyOptions && (
@@ -655,7 +743,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           <p>Try searching for popular resources</p>
         </div>
         <div>
-          <div className='text-md flex flex-wrap space-x-2'>
+          <div className='text-md flex flex-wrap md:space-x-2'>
             {typeFilterData.options.map((option: FilterOption) => (
               <button
                 aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
@@ -679,16 +767,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         <div>
           <div className='flex justify-between items-center'>
             <div>
-              <p className='my-2 md:my-6 text-lg'>
-                Showing {filteredAndMappedResources.length} results for{' '}
-                <strong>{currentGeography}</strong>
-                {selectedType.length > 0 && (
-                  <>
-                    {' '}
-                    that help you <strong>{currentType}</strong>
-                  </>
-                )}
-              </p>
+              <p className='my-2 md:my-6 text-lg'>{getSummaryText()}</p>
             </div>
             <div className='flex space-x-4'>
               <label className='flex items-center space-x-2'>
@@ -769,16 +848,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               </label>
             </div>
             <div className='pb-3'>
-              <p className='my-2 md:my-4 text-lg'>
-                Showing {filteredAndMappedResources.length} results for{' '}
-                <strong>{currentGeography}</strong>
-                {selectedType.length > 0 && (
-                  <>
-                    {' '}
-                    that help you <strong>{currentType}</strong>
-                  </>
-                )}
-              </p>
+              <p className='my-2 md:my-4 text-lg'>{getSummaryText()}</p>
             </div>
             <div className='space-y-4'>
               {paginatedResources.map((resource, index) => (
