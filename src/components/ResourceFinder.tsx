@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckIcon, MapIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'; // Added XMarkIcon
+import { CheckIcon, MapIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import AssetListItem from './AssetListItem';
+import ViewToggle from './ViewToggle';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -43,15 +44,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const [isMapFocused, setIsMapFocused] = useState<boolean>(false);
   const [countyList, setCountyList] = useState<County[]>([]);
   const [currentCountyIndex, setCurrentCountyIndex] = useState<number>(-1);
-  const [selectedAsset, setSelectedAsset] = useState<GeoJSON.Feature | null>(null); // New state for selected asset
+  const [selectedAsset, setSelectedAsset] = useState<GeoJSON.Feature | null>(null);
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
   const assetSectionRef = useRef<HTMLDivElement>(null);
-  const srCountyRef = useRef<HTMLDivElement>(null); // Ref for screen reader announcement
-  const [selectedView, setSelectedView] = useState('list');
+  const srCountyRef = useRef<HTMLDivElement>(null);
+  const [selectedView, setSelectedView] = useState('map');
   const navigate = useNavigate();
 
   const handleNavigate = (view: string) => {
@@ -61,6 +62,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
+  );
+
+  const northCarolinaBounds = new mapboxgl.LngLatBounds(
+    [-84.3219, 33.7529], // Southwest corner of NC
+    [-75.4001, 36.588], // Northeast corner of NC
   );
 
   useEffect(() => {
@@ -90,7 +96,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       if (event.key === 'Escape' && !isModalOpen) {
         setSelectedType([]);
         setCurrentPage(1);
-        setSelectedAsset(null); // Deselect the asset on escape
+        setSelectedAsset(null);
       }
     };
     window.addEventListener('keydown', handleEscapeKey);
@@ -104,17 +110,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       mapInstance.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/eddiejoeantonio/clxdqaemw007001qj6xirfmxv',
-        center: [-79, 35],
-        zoom: 5.5,
         maxZoom: 20,
-        maxBounds: [
-          [-90, 30],
-          [-70, 40],
-        ],
+        maxBounds: northCarolinaBounds,
         attributionControl: false,
       });
 
-      // Add navigation controls with higher z-index
+      // Initialize map with North Carolina bounds
+      mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
+
       const navControl = new mapboxgl.NavigationControl();
       mapInstance.current.addControl(navControl, 'top-right');
 
@@ -136,8 +139,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             source: 'counties',
             'source-layer': 'ncgeo',
             paint: {
-              'fill-color': '#acacac', // Default color for other counties
-              'fill-opacity': 0.0, // Initially transparent
+              'fill-color': '#acacac',
+              'fill-opacity': 0.0,
               'fill-outline-color': 'white',
             },
           });
@@ -148,8 +151,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             source: 'zipcodes',
             'source-layer': 'NC_Zipcodes',
             paint: {
-              'fill-color': '#acacac', // Default color for zipcodes
-              'fill-opacity': 0.0, // Initially transparent
+              'fill-color': '#acacac',
+              'fill-opacity': 0.0,
               'fill-outline-color': 'white',
             },
           });
@@ -167,30 +170,27 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               paint: {
                 'circle-radius': {
                   stops: [
-                    [8, 2.5],
-                    [11, 6],
-                    [16, 8],
+                    [8, 3],
+                    [11, 9],
+                    [16, 12],
                   ],
                 },
                 'circle-color': '#BC2442',
                 'circle-stroke-color': 'white',
-                'circle-stroke-width': 0.5,
+                'circle-stroke-width': 1,
               },
             });
 
-            // Create a tooltip div
             const tooltip = new mapboxgl.Popup({
               closeButton: false,
               closeOnClick: false,
             });
 
-            // Display the tooltip on hover
-            mapInstance.current!.on('mousemove', 'geojson-layer', (e) => {
+            mapInstance.current.on('mousemove', 'geojson-layer', (e) => {
               const coordinates = e.lngLat;
               const feature = e.features?.[0];
 
               if (feature && feature.properties) {
-                // Set the tooltip content
                 tooltip
                   .setLngLat(coordinates)
                   .setHTML(
@@ -200,42 +200,35 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               }
             });
 
-            // Remove the tooltip on mouseleave
-            mapInstance.current!.on('mouseleave', 'geojson-layer', () => {
+            mapInstance.current.on('mouseleave', 'geojson-layer', () => {
               tooltip.remove();
             });
 
-            // Add click event to zoom to asset and filter the list
             mapInstance.current.on('click', 'geojson-layer', (e) => {
               const clickedFeature = e.features?.[0];
               if (clickedFeature) {
                 const geometry = clickedFeature.geometry;
-
-                // Ensure the geometry is a Point before accessing coordinates
                 if (geometry.type === 'Point') {
                   const coordinates = geometry.coordinates as [number, number];
-
-                  // Zoom to the clicked feature
                   mapInstance.current!.flyTo({
                     center: coordinates,
                     zoom: 14,
                   });
-
-                  // Set the clicked asset as selected and filter the list
                   setSelectedAsset(clickedFeature);
+                  setSelectedCounty(null);
+                  setSelectedType([]);
+                  setSearchQuery('');
                 }
               }
             });
           }
 
-          // Populate the county list for keyboard navigation
           const counties = geographyFilterData.options.map((option) => ({
             value: option.value,
             label: option.label,
           }));
           setCountyList(counties);
 
-          // Make the map focusable
           mapInstance.current.getContainer().setAttribute('tabindex', '0');
         }
       });
@@ -279,10 +272,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           }
         }
       } else {
-        mapInstance.current.flyTo({
-          center: [-79.0193, 35.7596],
-          zoom: 6,
-        });
+        mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
       }
     }
   }, [selectedCounty]);
@@ -298,17 +288,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   }, [selectedView]);
 
   const handleCountySelection = (geography: County) => {
+    setSelectedAsset(null);
+
     setSelectedCounty((prevGeography) => {
       if (prevGeography && prevGeography.value === geography.value) {
         setCountyQuery('');
-        // Reset to the overall boundaries and make all geographies transparent again
         if (mapInstance.current) {
+          mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
           mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', 0.0);
           mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', 0.0);
-          mapInstance.current.flyTo({
-            center: [-79.0193, 35.7596],
-            zoom: 6,
-          });
         }
         return null;
       }
@@ -323,7 +311,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       const bounds = new mapboxgl.LngLatBounds();
 
       if (geography.type === 'County') {
-        // Query the selected county and set bounds
         const features = mapInstance.current.querySourceFeatures('counties', {
           sourceLayer: 'ncgeo',
           filter: ['==', 'County', geography.value],
@@ -342,19 +329,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             mapInstance.current.fitBounds(bounds, { padding: 20 });
           }
 
-          // Darken other counties and keep the selected county transparent
           mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
             'case',
             ['==', ['get', 'County'], geography.value],
-            0.0, // Selected county stays transparent
-            0.5, // Other counties darken
+            0.0,
+            0.5,
           ]);
-
-          // Keep ZIP codes layer fully transparent
           mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', 0.0);
         }
       } else if (geography.type === 'ZipCode') {
-        // Query the selected ZIP code and set bounds
         const features = mapInstance.current.querySourceFeatures('zipcodes', {
           sourceLayer: 'NC_Zipcodes',
           filter: ['==', 'ZCTA5CE20', geography.value],
@@ -373,15 +356,12 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             mapInstance.current.fitBounds(bounds, { padding: 20 });
           }
 
-          // Darken other ZIP codes and keep the selected ZIP code transparent
           mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', [
             'case',
             ['==', ['get', 'ZCTA5CE20'], geography.value],
-            0.0, // Selected ZIP code stays transparent
-            0.5, // Other ZIP codes darken
+            0.0,
+            0.5,
           ]);
-
-          // Keep counties layer fully transparent
           mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', 0.0);
         }
       }
@@ -389,6 +369,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   };
 
   const toggleTypeSelection = (type: string) => {
+    setSelectedAsset(null);
     setSelectedType((prevSelectedTypes) =>
       prevSelectedTypes.includes(type)
         ? prevSelectedTypes.filter((t) => t !== type)
@@ -399,6 +380,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedAsset(null);
     setSearchQuery(e.target.value);
     setCurrentPage(1);
     scrollToTop();
@@ -457,7 +439,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         const countyName = countyList[currentCountyIndex].value;
         handleCountySelection({ value: countyName, label: countyName });
 
-        // Zoom to the selected county
         if (mapInstance.current) {
           const features = mapInstance.current.querySourceFeatures('counties', {
             sourceLayer: 'ncgeo',
@@ -482,12 +463,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       } else if (e.key === 'Escape') {
         setIsMapFocused(false);
         setCurrentCountyIndex(-1);
-        // Reset to the overall boundaries
         if (mapInstance.current) {
-          mapInstance.current.flyTo({
-            center: [-79.0193, 35.7596],
-            zoom: 6,
-          });
+          mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
         }
       }
 
@@ -515,7 +492,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     scrollToTop();
   };
 
-  // Inside the ResourceFinder component, before the return statement
   const currentGeography = selectedCounty
     ? selectedCounty.type === 'County'
       ? `${selectedCounty.label} County`
@@ -524,7 +500,21 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
   const getSummaryText = () => {
     if (selectedAsset) {
-      return <>Showing {selectedAsset.properties?.name}</>;
+      return (
+        <>
+          Showing {selectedAsset.properties?.name}
+          <button
+            className='ml-2 inline-flex align-middle items-center'
+            onClick={() => {
+              setSelectedAsset(null);
+              mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 });
+            }}
+            aria-label='Deselect asset'
+          >
+            <XMarkIcon className='h-6 w-6 text-gray-600 hover:text-gray-800' />
+          </button>
+        </>
+      );
     } else {
       return (
         <>
@@ -541,13 +531,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     }
   };
 
-  // // Filter resources based on selected asset
-  // const filteredResources = selectedAsset
-  //   ? geoResource.features.filter(
-  //       (resource) => resource.properties?.name === selectedAsset.properties?.name,
-  //     )
-  //   : geoResource.features;
-
   const fuseOptions = {
     keys: [
       'properties.name',
@@ -560,20 +543,13 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
   const fuse = new Fuse(geoResource.features, fuseOptions);
 
-  // First, apply search filtering
   const searchFilteredResources = searchQuery
     ? fuse.search(searchQuery).map((result) => result.item)
     : geoResource.features;
 
-  const filteredAndMappedResources = (
-    selectedAsset
-      ? [selectedAsset] // If an asset is selected, only show that asset
-      : searchFilteredResources
-  ) // Otherwise, show filtered results
-    // Step 1: Filter out features that are not Points and explicitly cast to GeoJSON.Point
+  const filteredAndMappedResources = (selectedAsset ? [selectedAsset] : searchFilteredResources)
     .filter((resource) => resource.geometry.type === 'Point')
     .map((resource) => {
-      // Step 2: Ensure the resource properties match the expected structure
       const properties: {
         name: string;
         geography?: string;
@@ -594,14 +570,12 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         googlemaps_link: resource.properties?.googlemaps_link,
       };
 
-      // Step 3: Return the resource as a GeoJSON feature with Point type and correct properties
       return {
         type: 'Feature',
-        geometry: resource.geometry as GeoJSON.Point, // Explicitly cast to GeoJSON.Point
+        geometry: resource.geometry as GeoJSON.Point,
         properties: properties,
       } as GeoJSON.Feature<GeoJSON.Point, typeof properties>;
     })
-    // Step 4: Additional filtering based on other criteria like county and type
     .filter((resource) => {
       const countyMatch =
         !selectedCounty ||
@@ -623,11 +597,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
-  // Add clear functionality for input fields
+
   const clearSearchQuery = () => setSearchQuery('');
   const clearCountyQuery = () => {
     setCountyQuery('');
     setSelectedCounty(null);
+    if (mapInstance.current) {
+      mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
+    }
   };
 
   return (
@@ -657,7 +634,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
                 className='absolute inset-y-0 right-2 flex items-center cursor-pointer'
                 onClick={clearSearchQuery}
                 onKeyDown={(e) => e.key === 'Enter' && clearSearchQuery()}
-                tabIndex={0} // Make the X button accessible
+                tabIndex={0}
                 aria-label='Clear search input'
               >
                 <XMarkIcon
@@ -696,7 +673,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
                 className='absolute inset-y-0 right-2 flex items-center cursor-pointer'
                 onClick={clearCountyQuery}
                 onKeyDown={(e) => e.key === 'Enter' && clearCountyQuery()}
-                tabIndex={0} // Make the X button accessible
+                tabIndex={0}
                 aria-label='Clear county input'
               >
                 <XMarkIcon
@@ -769,30 +746,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             <div>
               <p className='my-2 md:my-6 text-lg'>{getSummaryText()}</p>
             </div>
-            <div className='flex space-x-4'>
-              <label className='flex items-center space-x-2'>
-                <input
-                  type='radio'
-                  name='view'
-                  value='map'
-                  onChange={() => handleNavigate('map')}
-                  className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
-                />
-                <span className='text-[#092940]'>Map View</span>
-              </label>
-
-              <label className='flex items-center space-x-2'>
-                <input
-                  type='radio'
-                  name='view'
-                  value='list'
-                  checked={selectedView === 'list'}
-                  onChange={() => handleNavigate('list')}
-                  className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
-                />
-                <span className='text-[#092940]'>List View</span>
-              </label>
-            </div>
+            <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
           </div>
 
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 space-y-0'>
@@ -823,30 +777,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-2 md:py-0 md:p-4 w-full'
             style={{ flex: 1, overflowY: 'auto' }}
           >
-            <div className='flex space-x-4'>
-              <label className='flex items-center space-x-2'>
-                <input
-                  type='radio'
-                  name='view'
-                  value='map'
-                  onChange={() => handleNavigate('map')}
-                  className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
-                />
-                <span className='text-[#092940]'>Map View</span>
-              </label>
-
-              <label className='flex items-center space-x-2'>
-                <input
-                  type='radio'
-                  name='view'
-                  value='list'
-                  checked={selectedView === 'list'}
-                  onChange={() => handleNavigate('list')}
-                  className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
-                />
-                <span className='text-[#092940]'>List View</span>
-              </label>
-            </div>
+            <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
             <div className='pb-3'>
               <p className='my-2 md:my-4 text-lg'>{getSummaryText()}</p>
             </div>
