@@ -52,6 +52,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null); // Create a ref for search input
+
   const assetSectionRef = useRef<HTMLDivElement>(null);
   const srCountyRef = useRef<HTMLDivElement>(null);
   const [selectedView, setSelectedView] = useState('map');
@@ -462,7 +463,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             onClick={() => {
               setSelectedAsset(null);
               setSelectedCounty(null);
-              clearCountyQuery();
+              clearCountyQuery(); // Modify this to avoid focusing on the input
               mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 });
             }}
             aria-label='Deselect asset'
@@ -601,11 +602,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       searchInputRef.current.focus(); // Restore focus to the search input
     }
   };
-  // Function to clear county query and restore focus to county input
-  const clearCountyQuery = () => {
+  const clearCountyQuery = (focusInput = false) => {
     setCountyQuery('');
     setSelectedCounty(null);
-    if (countyInputRef.current) {
+    if (focusInput && countyInputRef.current) {
       countyInputRef.current.focus(); // Restore focus to the county input
     }
     if (mapInstance.current) {
@@ -678,7 +678,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             {countyQuery && (
               <button
                 className='absolute inset-y-0 right-2 flex items-center cursor-pointer'
-                onClick={clearCountyQuery}
+                onClick={() => clearCountyQuery(false)} // Wrap the function in an arrow function
                 onKeyDown={(e) => e.key === 'Enter' && clearCountyQuery()}
                 tabIndex={0}
                 aria-label='Clear county input'
