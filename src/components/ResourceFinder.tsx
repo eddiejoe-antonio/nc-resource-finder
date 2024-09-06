@@ -490,6 +490,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       'properties.description',
       'properties.primary_type',
       'properties.geography',
+      'properties.address_geocode',
     ],
     threshold: 0.3,
   };
@@ -732,14 +733,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
       {selectedView === 'list' ? (
         <div>
-          <div className='flex justify-between items-center'>
+          <div className='block md:flex my-6 justify-between items-center'>
             <div>
-              <p className='my-2 md:my-6 text-lg'>{getSummaryText()}</p>
+              <p className='my-6 md:my-0 text-lg'>{getSummaryText()}</p>
             </div>
             <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
           </div>
 
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 space-y-0'>
+          <div className='mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 space-y-0'>
             {paginatedResources.map((resource, index) => (
               <AssetListItem key={index} resource={resource} />
             ))}
@@ -764,11 +765,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           <div ref={srCountyRef} className='sr-only' aria-live='assertive'></div>
           <div
             ref={assetSectionRef}
-            className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-2 md:py-0 md:p-4 w-full'
+            className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-6 md:py-0 md:p-4 w-full'
             style={{ flex: 1, overflowY: 'auto' }}
           >
             <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
-            <div className='pb-3'>
+            <div className='py-3'>
               <p className='my-2 md:my-4 text-lg'>{getSummaryText()}</p>
             </div>
             <div className='space-y-4'>
