@@ -497,6 +497,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             onClick={() => {
               setSelectedAsset(null);
               setSelectedCounty(null);
+              clearCountyQuery();
               mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 });
             }}
             aria-label='Deselect asset'
