@@ -47,7 +47,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           <button
             onClick={() => handlePageChange(1)}
             disabled={currentPage === 1}
-            className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
+            className='px-2 py-1 mx-1 rounded-md md:hover:bg-[#dedede]'
             aria-label='First page'
           >
             {'<<'}
@@ -57,7 +57,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
+            className='px-2 py-1 mx-1 rounded-md md:hover:bg-[#dedede]'
             aria-label='Previous page'
           >
             {'<'}
@@ -69,9 +69,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
               <button
                 onClick={() => handlePageChange(page)}
                 className={`px-2 py-1 mx-1 rounded-md ${
-                  page === currentPage
-                    ? 'bg-[#1E79C8] text-white'
-                    : 'bg-gray-200 md:hover:bg-[#dedede]'
+                  page === currentPage ? 'bg-[#1E79C8] text-white' : ' md:hover:bg-[#dedede]'
                 }`}
                 aria-label={`Page ${page}`}
                 aria-current={page === currentPage ? 'page' : undefined}
@@ -87,7 +85,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
+            className='px-2 py-1 mx-1 rounded-md md:hover:bg-[#dedede]'
             aria-label='Next page'
           >
             {'>'}
@@ -97,7 +95,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           <button
             onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages}
-            className='px-2 py-1 mx-1 bg-gray-200 rounded-md md:hover:bg-[#dedede]'
+            className='px-2 py-1 mx-1 rounded-md md:hover:bg-[#dedede]'
             aria-label='Last page'
           >
             {'>>'}

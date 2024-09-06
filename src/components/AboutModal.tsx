@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import illustration from '../assets/about.jpg';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 interface AboutModalProps {
   onClose: () => void;
@@ -65,7 +66,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
         <div className='flex justify-end px-4 py-2'>
           <button
             ref={firstFocusableElementRef}
-            className='bg-[#1E79C8] text-white py-2 px-4 rounded-full hover:bg-[#3892E1]'
+            className='bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1] md:hover:text-white py-2 px-4 rounded-full mt-4'
             onClick={onClose}
             aria-label='Close modal'
           >
@@ -77,7 +78,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
           <div className='flex flex-col md:flex-row md:space-x-12 pb-8'>
             <div className='flex-1'>
               <section className='mb-4'>
-                <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940] uppercase mb-4'>
+                <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940]  mb-4'>
                   How Did North Carolina Gather These Resources?
                 </h2>
                 <p>
@@ -96,7 +97,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
                 </p>
               </section>
               <section>
-                <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940] uppercase mb-8'>
+                <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940]  mb-8'>
                   How Can I Add Or Update Information On A Resource?
                 </h2>
                 <p className='pb-2'>
@@ -106,15 +107,16 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
                   submissions for accuracy and duplications before integrating them into the site.
                 </p>
                 <button
-                  className='bg-[#1E79C8] text-white py-2 px-4 rounded-full mt-4 hover:bg-[#3892E1]'
+                  className=' flex bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1] md:hover:text-white py-2 px-4 rounded-full mt-4'
                   onClick={handleContributeClick}
                 >
-                  Contribute to the dataset
+                  <PlusCircleIcon className='w-6 h-6 mr-2' />
+                  <span className='whitespace-nowrap'>Add a resource</span>
                 </button>
               </section>
               <section className='mt-8 mb-4'>
-                <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940] uppercase mb-4'>
-                  HOW CAN I USE THE APP?
+                <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940]  mb-4'>
+                  How Can I Use the App?
                 </h2>
                 <p>
                   You can use the Tech Resource Finder to identify a digital equity resource in your
@@ -125,8 +127,8 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
                 </p>
               </section>
               <section className='mb-4'>
-                <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940] uppercase mb-4'>
-                  I’M HAVING TROUBLE USING THE APP. WHAT SHOULD I DO?
+                <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940]  mb-4'>
+                  I’m Having Trouble with the App. What Should I Do?
                 </h2>
                 <p>
                   If you are having trouble using the app, please review the training video
