@@ -1,9 +1,23 @@
 import Papa from 'papaparse';
 import { Resource } from '../types/resourceFinderTypes';
+import type GeoJSON from 'geojson';
 
-export const fetchResources = async (): Promise<Resource[]> => {
+export const fetchGeoResources = async (): Promise<
+  GeoJSON.FeatureCollection<
+    GeoJSON.Point,
+    {
+      name: string;
+      geography?: string;
+      zip_code?: string;
+      primary_type?: string;
+      website?: string;
+      description?: string;
+      address_geocode?: string;
+      googlemaps_link?: string;
+    }
+  >
+> => {
   const timestamp = new Date().getTime();
-  // const url = `https://nc-resource-finder.s3.amazonaws.com/resources.csv`;
   const url = `https://files.nc.gov/asset-hub/resources.csv?t=${timestamp}`;
 
   const response = await fetch(url, {
@@ -29,7 +43,41 @@ export const fetchResources = async (): Promise<Resource[]> => {
     return 0;
   });
 
-  console.log(sortedData);
+  // Convert the parsed data to GeoJSON format, ensuring only Point geometries
+  const geoJsonData: GeoJSON.FeatureCollection<
+    GeoJSON.Point,
+    {
+      name: string;
+      geography?: string;
+      zip_code?: string;
+      primary_type?: string;
+      website?: string;
+      description?: string;
+      address_geocode?: string;
+      googlemaps_link?: string;
+    }
+  > = {
+    type: 'FeatureCollection',
+    features: sortedData
+      .filter((resource) => resource !== null && resource !== null) // Filter out null coordinates
+      .map((resource) => ({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [resource.long, resource.lat],
+        },
+        properties: {
+          name: resource.name,
+          geography: resource.geography,
+          zip_code: resource.zip_code,
+          primary_type: resource.primary_type,
+          website: resource.website,
+          description: resource.description,
+          address_geocode: resource.address_geocode,
+          googlemaps_link: resource.googlemaps_link,
+        },
+      })),
+  };
 
-  return sortedData;
+  return geoJsonData;
 };

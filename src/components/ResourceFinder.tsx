@@ -1,30 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { CheckIcon, MapIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
+import { CheckIcon, MapIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import AssetListItem from './AssetListItem';
+import ViewToggle from './ViewToggle';
 import { geographyFilterData, typeFilterData, FilterOption } from '../static/filterResourceFinder';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Position } from 'geojson';
 import Pagination from './Pagination';
-import { fetchResources } from '../utils/apiService';
-import { Resource } from '../types/resourceFinderTypes'; // Import the Resource type
+import { fetchGeoResources } from '../utils/apiService';
+import type GeoJSON from 'geojson';
 import Fuse from 'fuse.js';
 
 mapboxgl.accessToken =
   'pk.eyJ1IjoiZWRkaWVqb2VhbnRvbmlvIiwiYSI6ImNsNmVlejU5aDJocHMzZW8xNzhhZnM3MGcifQ.chkV7QUpL9e3-hRc977uyA';
 
+type GeoJsonFeatureCollection = GeoJSON.FeatureCollection<
+  GeoJSON.Geometry,
+  GeoJSON.GeoJsonProperties
+>;
+
 interface County {
   value: string;
   label: string;
+  type?: string;
 }
 
 interface ResourceFinderProps {
-  selectedView: string;
   isModalOpen: boolean;
 }
 
-const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOpen }) => {
-  const [resources, setResources] = useState<Resource[]>([]);
+const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
+  const [geoResource, setGeoResource] = useState<GeoJsonFeatureCollection>({
+    type: 'FeatureCollection',
+    features: [],
+  });
   const [selectedCounty, setSelectedCounty] = useState<County | null>(null);
   const [selectedType, setSelectedType] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,23 +45,36 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   const [isMapFocused, setIsMapFocused] = useState<boolean>(false);
   const [countyList, setCountyList] = useState<County[]>([]);
   const [currentCountyIndex, setCurrentCountyIndex] = useState<number>(-1);
+  const [selectedAsset, setSelectedAsset] = useState<GeoJSON.Feature | null>(null);
   const ITEMS_PER_PAGE = 18;
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<mapboxgl.Map | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
   const assetSectionRef = useRef<HTMLDivElement>(null);
-  const srCountyRef = useRef<HTMLDivElement>(null); // Ref for screen reader announcement
+  const srCountyRef = useRef<HTMLDivElement>(null);
+  const [selectedView, setSelectedView] = useState('map');
+  const navigate = useNavigate();
+
+  const handleNavigate = (view: string) => {
+    setSelectedView(view);
+    navigate('/');
+  };
 
   const filteredCounties = geographyFilterData.options.filter((option) =>
     option.label.toLowerCase().includes(countyQuery.toLowerCase()),
   );
 
+  const northCarolinaBounds = new mapboxgl.LngLatBounds(
+    [-84.3219, 33.7529], // Southwest corner of NC
+    [-75.4001, 36.588], // Northeast corner of NC
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchResources();
-        setResources(data);
+        const geoData = await fetchGeoResources();
+        setGeoResource(geoData);
       } catch (error) {
         console.error('Error fetching resources:', error);
       }
@@ -75,6 +97,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       if (event.key === 'Escape' && !isModalOpen) {
         setSelectedType([]);
         setCurrentPage(1);
+        setSelectedAsset(null);
+        setSelectedCounty(null);
+        mapInstance.current?.fitBounds(northCarolinaBounds, { padding: 20 });
       }
     };
     window.addEventListener('keydown', handleEscapeKey);
@@ -83,154 +108,133 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     };
   }, [isModalOpen]);
 
+  // Initialize Map and handle view switch zoom logic
   useEffect(() => {
     if (selectedView === 'map' && !mapInstance.current && mapContainer.current) {
       mapInstance.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/eddiejoeantonio/clxdqaemw007001qj6xirfmxv',
-        center: [-79, 35],
-        zoom: 5.5,
         maxZoom: 20,
-        maxBounds: [
-          [-90, 30],
-          [-70, 40],
-        ],
+        maxBounds: northCarolinaBounds,
         attributionControl: false,
       });
 
-      // Add navigation controls with higher z-index
+      // Always start by zooming to North Carolina bounds on map initialization
+      mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
+
       const navControl = new mapboxgl.NavigationControl();
       mapInstance.current.addControl(navControl, 'top-right');
 
-      // Handle zoom interaction to avoid selecting a county
-      const zoomInButton = mapContainer.current.querySelector('.mapboxgl-ctrl-zoom-in');
-      const zoomOutButton = mapContainer.current.querySelector('.mapboxgl-ctrl-zoom-out');
-      const compassButton = mapContainer.current.querySelector('.mapboxgl-ctrl-compass');
-
-      if (zoomInButton) {
-        zoomInButton.addEventListener('keydown', (e) => {
-          if ((e as KeyboardEvent).key === 'Enter') {
-            e.stopPropagation();
-            mapInstance.current?.zoomIn();
-          }
-        });
-      }
-
-      if (zoomOutButton) {
-        zoomOutButton.addEventListener('keydown', (e) => {
-          if ((e as KeyboardEvent).key === 'Enter') {
-            e.stopPropagation();
-            mapInstance.current?.zoomOut();
-          }
-        });
-      }
-
-      if (compassButton) {
-        compassButton.addEventListener('keydown', (e) => {
-          if ((e as KeyboardEvent).key === 'Enter') {
-            e.stopPropagation();
-            mapInstance.current?.zoomIn();
-          }
-        });
-      }
-
       mapInstance.current.on('load', () => {
+        // Sources and layers setup
         if (mapInstance.current) {
           mapInstance.current.addSource('counties', {
             type: 'vector',
             url: 'mapbox://eddiejoeantonio.5kdb3ae2',
           });
 
-          const layers = mapInstance.current.getStyle().layers;
-          let firstPlaceLabelId;
-          for (const layer of layers) {
-            if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
-              firstPlaceLabelId = layer.id;
-              break;
-            }
+          mapInstance.current.addSource('zipcodes', {
+            type: 'vector',
+            url: 'mapbox://eddiejoeantonio.23a15qmt',
+          });
+
+          mapInstance.current.addLayer({
+            id: 'counties-layer',
+            type: 'fill',
+            source: 'counties',
+            'source-layer': 'ncgeo',
+            paint: {
+              'fill-color': '#acacac',
+              'fill-opacity': 0.0,
+              'fill-outline-color': 'white',
+            },
+          });
+
+          mapInstance.current.addLayer({
+            id: 'zipcodes-layer',
+            type: 'fill',
+            source: 'zipcodes',
+            'source-layer': 'NC_Zipcodes',
+            paint: {
+              'fill-color': '#acacac',
+              'fill-opacity': 0.0,
+              'fill-outline-color': 'white',
+            },
+          });
+
+          // GeoJSON data for assets
+          if (geoResource) {
+            mapInstance.current.addSource('geojson-data', {
+              type: 'geojson',
+              data: geoResource,
+            });
+
+            mapInstance.current.addLayer({
+              id: 'geojson-layer',
+              type: 'circle',
+              source: 'geojson-data',
+              paint: {
+                'circle-radius': {
+                  stops: [
+                    [8, 3],
+                    [11, 9],
+                    [16, 12],
+                  ],
+                },
+                'circle-color': '#BC2442',
+                'circle-opacity': 0.9,
+                'circle-stroke-color': 'white',
+                'circle-stroke-width': 1,
+                'circle-stroke-opacity': 1,
+              },
+            });
+
+            // Tooltip for assets
+            const tooltip = new mapboxgl.Popup({
+              closeButton: false,
+              closeOnClick: false,
+            });
+
+            mapInstance.current.on('mousemove', 'geojson-layer', (e) => {
+              const coordinates = e.lngLat;
+              const feature = e.features?.[0];
+
+              if (feature && feature.properties) {
+                tooltip
+                  .setLngLat(coordinates)
+                  .setHTML(
+                    `<h1><strong>${feature.properties.name}</strong></h1><p>${feature.properties.address_geocode}</p>`,
+                  )
+                  .addTo(mapInstance.current!);
+              }
+            });
+
+            mapInstance.current.on('mouseleave', 'geojson-layer', () => {
+              tooltip.remove();
+            });
+
+            // Zoom to asset on click
+            mapInstance.current.on('click', 'geojson-layer', (e) => {
+              const clickedFeature = e.features?.[0];
+              if (clickedFeature) {
+                const geometry = clickedFeature.geometry;
+                if (geometry.type === 'Point') {
+                  const coordinates = geometry.coordinates as [number, number];
+                  mapInstance.current!.flyTo({
+                    center: coordinates,
+                    zoom: 14,
+                  });
+                  setSelectedAsset(clickedFeature);
+                }
+              }
+            });
           }
-
-          mapInstance.current.addLayer(
-            {
-              id: 'counties-layer',
-              type: 'fill',
-              source: 'counties',
-              'source-layer': 'ncgeo',
-              paint: {
-                'fill-color': '#acacac',
-                'fill-opacity': 0.9,
-                'fill-outline-color': 'white',
-              },
-            },
-            firstPlaceLabelId,
-          );
-
-          mapInstance.current.addLayer(
-            {
-              id: 'counties-layer-hover',
-              type: 'fill',
-              source: 'counties',
-              'source-layer': 'ncgeo',
-              paint: {
-                'fill-color': '#888',
-                'fill-outline-color': 'white',
-                'fill-opacity': 0.7,
-              },
-              filter: ['==', 'County', ''],
-            },
-            firstPlaceLabelId,
-          );
-
-          mapInstance.current.on('click', 'counties-layer', (e) => {
-            if (e.features && e.features.length > 0) {
-              const feature = e.features[0];
-              if (feature.properties) {
-                const countyName = feature.properties['County'];
-                if (countyName) {
-                  const county = { value: countyName, label: countyName };
-                  handleCountySelection(county);
-                }
-              }
-            }
-          });
-
-          mapInstance.current.on('mouseenter', 'counties-layer', () => {
-            if (!isMobile) {
-              mapInstance.current!.getCanvas().style.cursor = 'pointer';
-            }
-          });
-
-          mapInstance.current.on('mouseleave', 'counties-layer', () => {
-            if (!isMobile) {
-              mapInstance.current!.getCanvas().style.cursor = '';
-              mapInstance.current!.setFilter('counties-layer-hover', ['==', 'County', '']);
-            }
-          });
-
-          mapInstance.current.on('mousemove', 'counties-layer', (e) => {
-            if (!isMobile && e.features && e.features.length > 0) {
-              const feature = e.features[0];
-              if (feature.properties) {
-                const countyName = feature.properties['County'];
-                if (countyName) {
-                  mapInstance.current!.setFilter('counties-layer-hover', [
-                    '==',
-                    'County',
-                    countyName,
-                  ]);
-                }
-              }
-            }
-          });
-
-          // Populate the county list for keyboard navigation
           const counties = geographyFilterData.options.map((option) => ({
             value: option.value,
             label: option.label,
           }));
           setCountyList(counties);
 
-          // Make the map focusable
           mapInstance.current.getContainer().setAttribute('tabindex', '0');
         }
       });
@@ -242,15 +246,16 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         mapInstance.current = null;
       }
     };
-  }, [selectedView, isMobile]);
+  }, [selectedView, isMobile, geoResource]);
 
+  // Handle county selection logic
   useEffect(() => {
     if (mapInstance.current && mapInstance.current.isStyleLoaded()) {
-      mapInstance.current.setPaintProperty('counties-layer', 'fill-color', [
+      mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
         'case',
         ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
-        '#888',
-        '#adadad',
+        0,
+        0.0,
       ]);
 
       if (selectedCounty) {
@@ -263,8 +268,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         if (features.length > 0) {
           features.forEach((feature) => {
             if (feature.geometry.type === 'Polygon') {
-              (feature.geometry.coordinates[0] as Position[]).forEach((coord) => {
-                bounds.extend(coord as mapboxgl.LngLatLike);
+              (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                bounds.extend(coord);
               });
             }
           });
@@ -274,45 +279,86 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           }
         }
       } else {
-        mapInstance.current.flyTo({
-          center: [-79.0193, 35.7596],
-          zoom: 6,
-        });
+        mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
       }
     }
   }, [selectedCounty]);
 
-  useEffect(() => {
-    if (!countyQuery) {
-      setSelectedCounty(null);
-    }
-  }, [countyQuery]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedView]);
-
-  const handleCountySelection = (county: County) => {
-    setSelectedCounty((prevCounty) => {
-      if (prevCounty && prevCounty.value === county.value) {
-        setCountyQuery('');
-        // Reset to the overall boundaries
-        if (mapInstance.current) {
-          mapInstance.current.flyTo({
-            center: [-79.0193, 35.7596],
-            zoom: 6,
-          });
-        }
-        return null;
-      }
-      setCountyQuery(county.label);
-      return county;
-    });
+  const handleCountySelection = (geography: County) => {
+    setSelectedAsset(null); // Clear selected asset when geography is selected
+    setSelectedCounty(geography); // Set the selected county or zipcode
+    setCountyQuery(geography.label);
     setShowCountyOptions(false);
-    setCurrentPage(1);
+
+    if (mapInstance.current) {
+      const bounds = new mapboxgl.LngLatBounds();
+
+      if (geography.type === 'County') {
+        const features = mapInstance.current.querySourceFeatures('counties', {
+          sourceLayer: 'ncgeo',
+          filter: ['==', 'County', geography.value],
+        });
+
+        if (features.length > 0) {
+          features.forEach((feature) => {
+            if (feature.geometry.type === 'Polygon') {
+              (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                bounds.extend(coord);
+              });
+            }
+          });
+
+          if (!bounds.isEmpty()) {
+            mapInstance.current.fitBounds(bounds, { padding: 20 });
+          }
+
+          // Darken other counties and keep the selected county transparent
+          mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
+            'case',
+            ['==', ['get', 'County'], geography.value],
+            0.0, // Selected county stays transparent
+            0.0, // Other counties darken
+          ]);
+
+          // Keep ZIP codes layer fully transparent
+          mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', 0.0);
+        }
+      } else if (geography.type === 'ZipCode') {
+        const features = mapInstance.current.querySourceFeatures('zipcodes', {
+          sourceLayer: 'NC_Zipcodes',
+          filter: ['==', 'ZCTA5CE20', geography.value],
+        });
+
+        if (features.length > 0) {
+          features.forEach((feature) => {
+            if (feature.geometry.type === 'Polygon') {
+              (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                bounds.extend(coord);
+              });
+            }
+          });
+
+          if (!bounds.isEmpty()) {
+            mapInstance.current.fitBounds(bounds, { padding: 20 });
+          }
+
+          // Darken other ZIP codes and keep the selected ZIP code transparent
+          mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', [
+            'case',
+            ['==', ['get', 'ZCTA5CE20'], geography.value],
+            0.0, // Selected ZIP code stays transparent
+            0.0, // Other ZIP codes darken
+          ]);
+
+          // Keep counties layer fully transparent
+          mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', 0.0);
+        }
+      }
+    }
   };
 
   const toggleTypeSelection = (type: string) => {
+    setSelectedAsset(null);
     setSelectedType((prevSelectedTypes) =>
       prevSelectedTypes.includes(type)
         ? prevSelectedTypes.filter((t) => t !== type)
@@ -323,6 +369,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedAsset(null);
     setSearchQuery(e.target.value);
     setCurrentPage(1);
     scrollToTop();
@@ -381,7 +428,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
         const countyName = countyList[currentCountyIndex].value;
         handleCountySelection({ value: countyName, label: countyName });
 
-        // Zoom to the selected county
         if (mapInstance.current) {
           const features = mapInstance.current.querySourceFeatures('counties', {
             sourceLayer: 'ncgeo',
@@ -392,8 +438,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             const bounds = new mapboxgl.LngLatBounds();
             features.forEach((feature) => {
               if (feature.geometry.type === 'Polygon') {
-                (feature.geometry.coordinates[0] as Position[]).forEach((coord) => {
-                  bounds.extend(coord as mapboxgl.LngLatLike);
+                (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                  bounds.extend(coord);
                 });
               }
             });
@@ -406,12 +452,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       } else if (e.key === 'Escape') {
         setIsMapFocused(false);
         setCurrentCountyIndex(-1);
-        // Reset to the overall boundaries
         if (mapInstance.current) {
-          mapInstance.current.flyTo({
-            center: [-79.0193, 35.7596],
-            zoom: 6,
-          });
+          mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
         }
       }
 
@@ -426,7 +468,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
       const selectedCounty = countyList[currentCountyIndex];
       mapInstance.current.setFilter('counties-layer-hover', ['==', 'County', selectedCounty.value]);
     }
-  }, [currentCountyIndex]);
+  }, [countyList, currentCountyIndex]);
 
   const scrollToTop = () => {
     if (assetSectionRef.current) {
@@ -439,38 +481,104 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     scrollToTop();
   };
 
-  const currentGeography = selectedCounty ? `${selectedCounty.label} County` : 'North Carolina';
-  const currentType =
-    selectedType.length > 0
-      ? selectedType
-          .map((type) => typeFilterData.options.find((option) => option.value === type)?.label)
-          .join(', ')
-      : 'with technical issues';
+  const currentGeography = selectedCounty
+    ? selectedCounty.type === 'County'
+      ? `${selectedCounty.label} County`
+      : selectedCounty.label
+    : 'North Carolina';
+
+  const getSummaryText = () => {
+    if (selectedAsset) {
+      return (
+        <>
+          Showing {selectedAsset.properties?.name}
+          <button
+            className='ml-2 inline-flex align-middle items-center'
+            onClick={() => {
+              setSelectedAsset(null);
+              setSelectedCounty(null);
+              mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 });
+            }}
+            aria-label='Deselect asset'
+          >
+            <XMarkIcon className='h-6 w-6 text-gray-600 hover:text-gray-800' />
+          </button>
+        </>
+      );
+    } else {
+      return (
+        <>
+          Showing {filteredAndMappedResources.length} results for{' '}
+          <strong>{currentGeography}</strong>
+          {selectedType.length > 0 && (
+            <>
+              {' '}
+              that help you <strong>{selectedType.join(', ')}</strong>
+            </>
+          )}
+        </>
+      );
+    }
+  };
 
   const fuseOptions = {
-    keys: ['name', 'description', 'primary_type', 'geography'],
+    keys: [
+      'properties.name',
+      'properties.description',
+      'properties.primary_type',
+      'properties.geography',
+    ],
     threshold: 0.3,
   };
 
-  const fuse = new Fuse(resources, fuseOptions);
+  const fuse = new Fuse(geoResource.features, fuseOptions);
 
-  const filteredResources = searchQuery
+  const searchFilteredResources = searchQuery
     ? fuse.search(searchQuery).map((result) => result.item)
-    : resources;
+    : geoResource.features;
 
-  const filteredAndMappedResources = filteredResources
-    .map((resource) => ({
-      ...resource,
-      Type: resource.primary_type
-        ? resource.primary_type.split(',').map((type) => type.trim())
-        : [],
-      Geography: resource.geography ? resource.geography.split(',').map((geo) => geo.trim()) : [],
-    }))
+  const filteredAndMappedResources = (selectedAsset ? [selectedAsset] : searchFilteredResources)
+    .filter((resource) => resource.geometry.type === 'Point')
+    .map((resource) => {
+      const properties: {
+        name: string;
+        geography?: string;
+        zip_code?: string;
+        primary_type?: string;
+        website?: string;
+        description?: string;
+        address_geocode?: string;
+        googlemaps_link?: string;
+      } = {
+        name: resource.properties?.name || '',
+        geography: resource.properties?.geography,
+        zip_code: resource.properties?.zip_code ? String(resource.properties.zip_code) : undefined,
+        primary_type: resource.properties?.primary_type,
+        website: resource.properties?.website,
+        description: resource.properties?.description,
+        address_geocode: resource.properties?.address_geocode,
+        googlemaps_link: resource.properties?.googlemaps_link,
+      };
+
+      return {
+        type: 'Feature',
+        geometry: resource.geometry as GeoJSON.Point,
+        properties: properties,
+      } as GeoJSON.Feature<GeoJSON.Point, typeof properties>;
+    })
     .filter((resource) => {
       const countyMatch =
-        !selectedCounty || resource.Geography.includes(selectedCounty?.value || '');
+        !selectedCounty ||
+        (selectedCounty.type === 'County' &&
+          resource.properties.geography?.includes(selectedCounty.value)) ||
+        (selectedCounty.type === 'ZipCode' &&
+          resource.properties.zip_code &&
+          resource.properties.zip_code.includes(selectedCounty.value));
+
       const typeMatch =
-        selectedType.length === 0 || selectedType.some((type) => resource.Type.includes(type));
+        selectedType.length === 0 ||
+        selectedType.some((type) => resource.properties.primary_type?.includes(type));
+
       return countyMatch && typeMatch;
     });
 
@@ -480,44 +588,91 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
     currentPage * ITEMS_PER_PAGE,
   );
 
+  const clearSearchQuery = () => setSearchQuery('');
+  const clearCountyQuery = () => {
+    setCountyQuery('');
+    setSelectedCounty(null);
+    if (mapInstance.current) {
+      mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
+    }
+  };
+
   return (
     <div className='w-full py-4'>
-      <hr className='border-black' />
-      <div className='flex flex-col lg:flex-row lg:items-start lg:space-x-4 py-4 px-2 bg-[#EEF7FF]'>
+      <div className='flex flex-col border-t border-[#3B75A9] lg:flex-row lg:items-start lg:space-x-16 py-4'>
+        {/* Search Input */}
         <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2'>
+          <p className='my-2 font-semibold text-lg'>What are you looking for?</p>
           <label htmlFor='keyword-input' className='sr-only'>
             Keyword Search
           </label>
-          <span className='absolute inset-y-0 left-2 flex items-center'>
-            <MagnifyingGlassIcon className='h-6 w-6 text-black' aria-hidden='true' />
-          </span>
-          <input
-            id='keyword-input'
-            type='text'
-            placeholder="I'm looking for..."
-            className='w-full bg-white border border-gray-300 rounded-full shadow-md pl-10 pr-4 py-2 text-left cursor-default text-black'
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
+          <div className='relative'>
+            <span className='absolute inset-y-0 left-2 flex items-center'>
+              <MagnifyingGlassIcon className='h-6 w-6 text-black' aria-hidden='true' />
+            </span>
+            <input
+              id='keyword-input'
+              type='text'
+              placeholder='Search for resources'
+              className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-10 py-2 text-left cursor-default text-black'
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            {/* Clear Icon for Search */}
+            {searchQuery && (
+              <button
+                className='absolute inset-y-0 right-2 flex items-center cursor-pointer'
+                onClick={clearSearchQuery}
+                onKeyDown={(e) => e.key === 'Enter' && clearSearchQuery()}
+                tabIndex={0}
+                aria-label='Clear search input'
+              >
+                <XMarkIcon
+                  className='h-6 w-6 text-gray-400 hover:text-gray-600'
+                  aria-hidden='true'
+                />
+              </button>
+            )}
+          </div>
         </div>
-        <div className='relative flex-1 lg:w-1/2' ref={dropdownRef}>
+
+        {/* County Input */}
+        <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2' ref={dropdownRef}>
+          <p className='my-2 font-semibold text-lg'>Where are you looking?</p>
           <label htmlFor='county-input' className='sr-only'>
             County Selector
           </label>
-          <span className='absolute inset-y-0 left-2 flex items-center'>
-            <MapIcon className='h-6 w-6 text-black' aria-hidden='true' />
-          </span>
-          <input
-            id='county-input'
-            type='text'
-            placeholder='I am looking in...'
-            className='w-full bg-white border border-gray-300 rounded-full shadow-md pl-10 pr-4 py-2 text-left cursor-default text-black'
-            value={countyQuery}
-            onChange={handleCountyQueryChange}
-            onFocus={() => setShowCountyOptions(true)}
-            onKeyDown={handleKeyDown}
-            ref={countyInputRef}
-          />
+          <div className='relative'>
+            <span className='absolute inset-y-0 left-2 flex items-center'>
+              <MapIcon className='h-6 w-6 text-black' aria-hidden='true' />
+            </span>
+            <input
+              id='county-input'
+              type='text'
+              placeholder='Enter county or zip code'
+              className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-10 py-2 text-left cursor-default text-black'
+              value={countyQuery}
+              onChange={handleCountyQueryChange}
+              onFocus={() => setShowCountyOptions(true)}
+              onKeyDown={handleKeyDown}
+              ref={countyInputRef}
+            />
+            {/* Clear Icon for County */}
+            {countyQuery && (
+              <button
+                className='absolute inset-y-0 right-2 flex items-center cursor-pointer'
+                onClick={clearCountyQuery}
+                onKeyDown={(e) => e.key === 'Enter' && clearCountyQuery()}
+                tabIndex={0}
+                aria-label='Clear county input'
+              >
+                <XMarkIcon
+                  className='h-6 w-6 text-gray-400 hover:text-gray-600'
+                  aria-hidden='true'
+                />
+              </button>
+            )}
+          </div>
 
           {showCountyOptions && (
             <div className='absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm'>
@@ -537,7 +692,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
                         : 'font-normal'
                     }`}
                   >
-                    {option.label} County
+                    {option.label} {option.type === 'County' ? 'County' : ''}
                   </span>
                   {selectedCounty && selectedCounty.value === option.value && (
                     <span className='absolute inset-y-0 left-0 flex items-center pl-3'>
@@ -550,41 +705,41 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           )}
         </div>
       </div>
-      <div className='flex flex-col md:flex-row flex-wrap py-2 justify-start bg-[#EEF7FF]'>
-        <div className='text-md flex flex-wrap'>
-          {typeFilterData.options.map((option: FilterOption) => (
-            <button
-              aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
-              key={option.value}
-              onClick={() => toggleTypeSelection(option.value)}
-              className={`flex items-center px-6 py-2 ml-1 md:ml-2 mb-2 md:mb-1 rounded-full shadow-lg transition-colors whitespace-nowrap ${
-                selectedType.includes(option.value)
-                  ? 'bg-[#1E79C8] text-white border border-white'
-                  : 'bg-[#092940] text-white border border-[#092940] md:hover:bg-[#3892E1]'
-              } `}
-            >
-              {option.icon && <option.icon className='w-6 h-6 mr-2' />}
-              {option.label}
-            </button>
-          ))}
+      <div className='border-b border-[#3B75A9] pt-2 pb-6 justify-start'>
+        <div className='pb-2'>
+          <p>Try searching for popular resources</p>
+        </div>
+        <div>
+          <div className='text-md flex flex-wrap md:space-x-2'>
+            {typeFilterData.options.map((option: FilterOption) => (
+              <button
+                aria-pressed={selectedType.includes(option.value) ? 'true' : 'false'}
+                key={option.value}
+                onClick={() => toggleTypeSelection(option.value)}
+                className={`flex items-center px-6 py-2 mb-2 md:mb-1 rounded-full transition-colors whitespace-nowrap ${
+                  selectedType.includes(option.value)
+                    ? 'bg-[#1E79C8] text-white border border-white'
+                    : 'bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1] md:hover:text-white'
+                } `}
+              >
+                {option.icon && <option.icon className='w-6 h-6 mr-2' />}
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-      <div className='pb-3 bg-[#EEF7FF]'>
-        <p className='ml-1 md:ml-2'>
-          Showing <strong>{filteredAndMappedResources.length}</strong> results. You are viewing
-          resources in <strong>{currentGeography}</strong>
-          {selectedType.length > 0 && (
-            <>
-              {' '}
-              that help you <strong>{currentType}</strong>
-            </>
-          )}
-        </p>
-      </div>
-      <hr className='border-black' />
+
       {selectedView === 'list' ? (
         <div>
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 py-10 space-y-0'>
+          <div className='flex justify-between items-center'>
+            <div>
+              <p className='my-2 md:my-6 text-lg'>{getSummaryText()}</p>
+            </div>
+            <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
+          </div>
+
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 space-y-0'>
             {paginatedResources.map((resource, index) => (
               <AssetListItem key={index} resource={resource} />
             ))}
@@ -596,7 +751,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
           />
         </div>
       ) : (
-        <div className='flex flex-col md:flex-row'>
+        <div className='flex flex-col md:flex-row my-8'>
           <div
             ref={mapContainer}
             className='map-container h-[50vh] md:h-[60vh] lg:h-[80vh] w-full md:w-[55vw] md:flex-2'
@@ -612,7 +767,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ selectedView, isModalOp
             className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-2 md:py-0 md:p-4 w-full'
             style={{ flex: 1, overflowY: 'auto' }}
           >
-            <div className='space-y-4 py-6'>
+            <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
+            <div className='pb-3'>
+              <p className='my-2 md:my-4 text-lg'>{getSummaryText()}</p>
+            </div>
+            <div className='space-y-4'>
               {paginatedResources.map((resource, index) => (
                 <AssetListItem key={index} resource={resource} />
               ))}

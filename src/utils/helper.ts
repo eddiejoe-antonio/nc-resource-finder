@@ -2,6 +2,7 @@ import { FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 
 interface Resource {
   Geography: string;
+  Zipcode: string;
   Name: string;
   DeviceAccess: number; // Assuming Device Access is a number
   DigitalSkillsAndSupport: number; // Assuming Digital Skills & Technical Support is a number
