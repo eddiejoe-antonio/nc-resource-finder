@@ -51,11 +51,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const mapInstance = useRef<mapboxgl.Map | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null); // Create a ref for search input
   const assetSectionRef = useRef<HTMLDivElement>(null);
   const srCountyRef = useRef<HTMLDivElement>(null);
   const [selectedView, setSelectedView] = useState('map');
   const navigate = useNavigate();
-
   const handleNavigate = (view: string) => {
     setSelectedView(view);
     navigate('/');
@@ -439,8 +439,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    scrollToTop();
+    if (!selectedAsset) {
+      // Only allow changing pages if an asset is not selected
+      setCurrentPage(page);
+      scrollToTop();
+    }
   };
 
   const currentGeography = selectedCounty
@@ -563,7 +566,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     }
   }, [filteredAndMappedResources, selectedAsset]);
 
-  const totalPages = Math.ceil(filteredAndMappedResources.length / ITEMS_PER_PAGE);
   // Helper function to narrow down the type
   const isPointFeature = (
     feature: GeoJSON.Feature,
@@ -581,7 +583,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     }
   > => feature.geometry.type === 'Point';
 
-  // Filter out features that are not of type Point
+  const totalPages = selectedAsset
+    ? 1
+    : Math.ceil(filteredAndMappedResources.length / ITEMS_PER_PAGE);
+
   const paginatedResources =
     selectedAsset && isPointFeature(selectedAsset)
       ? [selectedAsset] // Only show the selected asset in the side pane if it's a Point
@@ -589,10 +594,20 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           .filter(isPointFeature) // Filter for only Point geometries
           .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  const clearSearchQuery = () => setSearchQuery('');
+  // Function to clear search query and restore focus to search input
+  const clearSearchQuery = () => {
+    setSearchQuery('');
+    if (searchInputRef.current) {
+      searchInputRef.current.focus(); // Restore focus to the search input
+    }
+  };
+  // Function to clear county query and restore focus to county input
   const clearCountyQuery = () => {
     setCountyQuery('');
     setSelectedCounty(null);
+    if (countyInputRef.current) {
+      countyInputRef.current.focus(); // Restore focus to the county input
+    }
     if (mapInstance.current) {
       mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
     }
@@ -618,6 +633,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-10 py-2 text-left cursor-default text-black'
               value={searchQuery}
               onChange={handleSearchChange}
+              ref={searchInputRef} // Attach the ref here
             />
             {/* Clear Icon for Search */}
             {searchQuery && (

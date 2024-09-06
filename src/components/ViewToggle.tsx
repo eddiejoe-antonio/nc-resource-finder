@@ -26,6 +26,7 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ selectedView, handleNavigate })
         type='button'
         ref={mapButtonRef} // Attach ref to Map button
         onClick={() => handleNavigate('map')}
+        aria-label='Map View'
         className={`flex px-4 py-2 rounded-full ${
           selectedView === 'map'
             ? 'bg-[#1E79C8] text-white border border-white'
@@ -40,6 +41,7 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ selectedView, handleNavigate })
         type='button'
         ref={listButtonRef} // Attach ref to List button
         onClick={() => handleNavigate('list')}
+        aria-label='Table View'
         className={`flex px-4 py-2 rounded-full ${
           selectedView === 'list'
             ? 'bg-[#1E79C8] text-white border border-white'
@@ -47,7 +49,7 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ selectedView, handleNavigate })
         }`}
       >
         <TableCellsIcon className='w-6 h-6 mr-2' />
-        List View
+        Table View
       </button>
     </div>
   );
