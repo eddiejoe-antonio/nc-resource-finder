@@ -119,14 +119,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         maxBounds: northCarolinaBounds,
         attributionControl: false,
       });
-
-      // Always start by zooming to North Carolina bounds on map initialization
       mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
 
       const navControl = new mapboxgl.NavigationControl();
       mapInstance.current.addControl(navControl, 'top-right');
 
       mapInstance.current.on('load', () => {
+        // Always start by zooming to North Carolina bounds on map initialization
+        mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 });
         // Sources and layers setup
         if (mapInstance.current) {
           mapInstance.current.addSource('counties', {
@@ -461,10 +461,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           <button
             className='ml-2 inline-flex align-middle items-center'
             onClick={() => {
-              setSelectedAsset(null);
-              setSelectedCounty(null);
-              clearCountyQuery(); // Modify this to avoid focusing on the input
-              mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 });
+              setSelectedAsset(null); // Deselect asset
+              mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 }); // Reset map
             }}
             aria-label='Deselect asset'
           >
@@ -603,10 +601,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     }
   };
   const clearCountyQuery = (focusInput = false) => {
-    setCountyQuery('');
-    setSelectedCounty(null);
+    setCountyQuery(''); // Clear the county query
+    setSelectedCounty(null); // Clear the selected county
     if (focusInput && countyInputRef.current) {
-      countyInputRef.current.focus(); // Restore focus to the county input
+      countyInputRef.current.focus(); // Focus the county input if specified
     }
     if (mapInstance.current) {
       mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
