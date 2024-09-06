@@ -7,32 +7,26 @@ interface ViewToggleProps {
 
 const ViewToggle: React.FC<ViewToggleProps> = ({ selectedView, handleNavigate }) => {
   return (
-    <div className='flex space-x-4' role='radiogroup' aria-label='View Toggle'>
-      <label className='flex items-center space-x-2'>
-        <input
-          type='radio'
-          name='view'
-          value='map'
-          checked={selectedView === 'map'}
-          onChange={() => handleNavigate('map')}
-          className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
-          tabIndex={selectedView === 'map' ? 0 : -1} // Ensure both buttons are tabbable
-        />
-        <span className='text-[#092940]'>Map View</span>
-      </label>
+    <div className='flex space-x-4' role='group' aria-label='View Toggle'>
+      <button
+        type='button'
+        onClick={() => handleNavigate('map')}
+        className={`px-4 py-2 rounded-md ${
+          selectedView === 'map' ? 'bg-[#1E79C8] text-white' : 'bg-gray-200 md:hover:bg-[#dedede]'
+        }`}
+      >
+        Map View
+      </button>
 
-      <label className='flex items-center space-x-2'>
-        <input
-          type='radio'
-          name='view'
-          value='list'
-          checked={selectedView === 'list'}
-          onChange={() => handleNavigate('list')}
-          className='form-radio h-5 w-5 text-[#092940] border-[#092940] focus:ring-0'
-          tabIndex={selectedView === 'list' ? 0 : -1} // Ensure both buttons are tabbable
-        />
-        <span className='text-[#092940]'>List View</span>
-      </label>
+      <button
+        type='button'
+        onClick={() => handleNavigate('list')}
+        className={`px-4 py-2 rounded-md ${
+          selectedView === 'list' ? 'bg-[#1E79C8] text-white' : 'bg-gray-200 md:hover:bg-[#dedede]'
+        }`}
+      >
+        List View
+      </button>
     </div>
   );
 };
