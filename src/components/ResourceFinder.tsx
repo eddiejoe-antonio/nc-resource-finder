@@ -284,15 +284,17 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     }
   }, [selectedCounty]);
 
+  // Handle county selection (geography)
   const handleCountySelection = (geography: County) => {
-    setSelectedAsset(null); // Clear selected asset when geography is selected
-    setSelectedCounty(geography); // Set the selected county or zipcode
+    setSelectedAsset(null);
+    setSelectedCounty(geography);
     setCountyQuery(geography.label);
     setShowCountyOptions(false);
+    setCurrentPage(1); // Reset to page 1 when geography changes
 
+    // Map fitting logic remains unchanged
     if (mapInstance.current) {
       const bounds = new mapboxgl.LngLatBounds();
-
       if (geography.type === 'County') {
         const features = mapInstance.current.querySourceFeatures('counties', {
           sourceLayer: 'ncgeo',
@@ -311,52 +313,12 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           if (!bounds.isEmpty()) {
             mapInstance.current.fitBounds(bounds, { padding: 20 });
           }
-
-          // Darken other counties and keep the selected county transparent
-          mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
-            'case',
-            ['==', ['get', 'County'], geography.value],
-            0.0, // Selected county stays transparent
-            0.0, // Other counties darken
-          ]);
-
-          // Keep ZIP codes layer fully transparent
-          mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', 0.0);
-        }
-      } else if (geography.type === 'ZipCode') {
-        const features = mapInstance.current.querySourceFeatures('zipcodes', {
-          sourceLayer: 'NC_Zipcodes',
-          filter: ['==', 'ZCTA5CE20', geography.value],
-        });
-
-        if (features.length > 0) {
-          features.forEach((feature) => {
-            if (feature.geometry.type === 'Polygon') {
-              (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
-                bounds.extend(coord);
-              });
-            }
-          });
-
-          if (!bounds.isEmpty()) {
-            mapInstance.current.fitBounds(bounds, { padding: 20 });
-          }
-
-          // Darken other ZIP codes and keep the selected ZIP code transparent
-          mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', [
-            'case',
-            ['==', ['get', 'ZCTA5CE20'], geography.value],
-            0.0, // Selected ZIP code stays transparent
-            0.0, // Other ZIP codes darken
-          ]);
-
-          // Keep counties layer fully transparent
-          mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', 0.0);
         }
       }
     }
   };
 
+  // Handle primary type (category) selection
   const toggleTypeSelection = (type: string) => {
     setSelectedAsset(null);
     setSelectedType((prevSelectedTypes) =>
@@ -364,17 +326,17 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         ? prevSelectedTypes.filter((t) => t !== type)
         : [...prevSelectedTypes, type],
     );
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to page 1 when primary type changes
     scrollToTop();
   };
 
+  // Handle search input changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedAsset(null);
     setSearchQuery(e.target.value);
-    setCurrentPage(1);
+    setSelectedAsset(null);
+    setCurrentPage(1); // Reset to page 1 on search change
     scrollToTop();
   };
-
   const handleCountyQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCountyQuery(e.target.value);
     setShowCountyOptions(true);
@@ -538,19 +500,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     ? fuse.search(searchQuery).map((result) => result.item)
     : geoResource.features;
 
-  const filteredAndMappedResources = (selectedAsset ? [selectedAsset] : searchFilteredResources)
+  const filteredAndMappedResources = searchFilteredResources
     .filter((resource) => resource.geometry.type === 'Point')
     .map((resource) => {
-      const properties: {
-        name: string;
-        geography?: string;
-        zip_code?: string;
-        primary_type?: string;
-        website?: string;
-        description?: string;
-        address_geocode?: string;
-        googlemaps_link?: string;
-      } = {
+      const properties = {
         name: resource.properties?.name || '',
         geography: resource.properties?.geography,
         zip_code: resource.properties?.zip_code ? String(resource.properties.zip_code) : undefined,
@@ -583,11 +536,57 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       return countyMatch && typeMatch;
     });
 
+  useEffect(() => {
+    if (mapInstance.current && mapInstance.current.isStyleLoaded()) {
+      const filteredGeoJson: GeoJSON.FeatureCollection<
+        GeoJSON.Point,
+        {
+          name: string;
+          geography: string | undefined;
+          zip_code: string | undefined;
+          primary_type: string | undefined;
+          website: string | undefined;
+          description: string | undefined;
+          address_geocode: string | undefined;
+          googlemaps_link: string | undefined;
+        }
+      > = {
+        type: 'FeatureCollection',
+        features: filteredAndMappedResources,
+      };
+
+      const geojsonSource = mapInstance.current.getSource('geojson-data') as mapboxgl.GeoJSONSource;
+      if (geojsonSource) {
+        geojsonSource.setData(filteredGeoJson);
+      }
+    }
+  }, [filteredAndMappedResources, selectedAsset]);
+
   const totalPages = Math.ceil(filteredAndMappedResources.length / ITEMS_PER_PAGE);
-  const paginatedResources = filteredAndMappedResources.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
+  // Helper function to narrow down the type
+  const isPointFeature = (
+    feature: GeoJSON.Feature,
+  ): feature is GeoJSON.Feature<
+    GeoJSON.Point,
+    {
+      name: string;
+      geography?: string;
+      zip_code?: string;
+      primary_type?: string;
+      website?: string;
+      description?: string;
+      address_geocode?: string;
+      googlemaps_link?: string;
+    }
+  > => feature.geometry.type === 'Point';
+
+  // Filter out features that are not of type Point
+  const paginatedResources =
+    selectedAsset && isPointFeature(selectedAsset)
+      ? [selectedAsset] // Only show the selected asset in the side pane if it's a Point
+      : filteredAndMappedResources
+          .filter(isPointFeature) // Filter for only Point geometries
+          .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const clearSearchQuery = () => setSearchQuery('');
   const clearCountyQuery = () => {
@@ -760,7 +759,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             onKeyDown={handleMapKeyDown}
             onFocus={() => setIsMapFocused(true)}
             onBlur={() => setIsMapFocused(false)}
-            aria-label='Map of counties'
+            aria-label='Map of Technology Resources'
           />
           <div ref={srCountyRef} className='sr-only' aria-live='assertive'></div>
           <div
