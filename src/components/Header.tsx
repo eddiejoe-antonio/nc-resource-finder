@@ -39,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ setIsModalOpen }) => {
 
   return (
     <div className='w-full'>
-      <div className='flex items-center justify-between'>
+      <div className='block md:flex items-center justify-between'>
         <div className='mt-16 md:mb-12 col-start-1 col-span-8 gap-0 text-left'>
           <h1 className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-semibold font-['Source Sans Pro']">
             Find Technology Resources{` `}

@@ -24,6 +24,7 @@ interface County {
   label: string;
   type?: string;
 }
+
 interface ResourceFinderProps {
   isModalOpen: boolean;
 }
@@ -97,6 +98,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         setSelectedType([]);
         setCurrentPage(1);
         setSelectedAsset(null);
+        setSelectedCounty(null);
+        mapInstance.current?.fitBounds(northCarolinaBounds, { padding: 20 });
       }
     };
     window.addEventListener('keydown', handleEscapeKey);
@@ -105,6 +108,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     };
   }, [isModalOpen]);
 
+  // Initialize Map and handle view switch zoom logic
   useEffect(() => {
     if (selectedView === 'map' && !mapInstance.current && mapContainer.current) {
       mapInstance.current = new mapboxgl.Map({
@@ -115,13 +119,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         attributionControl: false,
       });
 
-      // Initialize map with North Carolina bounds
+      // Always start by zooming to North Carolina bounds on map initialization
       mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
 
       const navControl = new mapboxgl.NavigationControl();
       mapInstance.current.addControl(navControl, 'top-right');
 
       mapInstance.current.on('load', () => {
+        // Sources and layers setup
         if (mapInstance.current) {
           mapInstance.current.addSource('counties', {
             type: 'vector',
@@ -157,6 +162,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             },
           });
 
+          // GeoJSON data for assets
           if (geoResource) {
             mapInstance.current.addSource('geojson-data', {
               type: 'geojson',
@@ -176,11 +182,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
                   ],
                 },
                 'circle-color': '#BC2442',
+                'circle-opacity': 0.9,
                 'circle-stroke-color': 'white',
                 'circle-stroke-width': 1,
+                'circle-stroke-opacity': 1,
               },
             });
 
+            // Tooltip for assets
             const tooltip = new mapboxgl.Popup({
               closeButton: false,
               closeOnClick: false,
@@ -204,6 +213,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               tooltip.remove();
             });
 
+            // Zoom to asset on click
             mapInstance.current.on('click', 'geojson-layer', (e) => {
               const clickedFeature = e.features?.[0];
               if (clickedFeature) {
@@ -215,14 +225,10 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
                     zoom: 14,
                   });
                   setSelectedAsset(clickedFeature);
-                  setSelectedCounty(null);
-                  setSelectedType([]);
-                  setSearchQuery('');
                 }
               }
             });
           }
-
           const counties = geographyFilterData.options.map((option) => ({
             value: option.value,
             label: option.label,
@@ -242,13 +248,14 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     };
   }, [selectedView, isMobile, geoResource]);
 
+  // Handle county selection logic
   useEffect(() => {
     if (mapInstance.current && mapInstance.current.isStyleLoaded()) {
       mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
         'case',
         ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
         0,
-        0.5,
+        0.0,
       ]);
 
       if (selectedCounty) {
@@ -277,35 +284,11 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     }
   }, [selectedCounty]);
 
-  useEffect(() => {
-    if (!countyQuery) {
-      setSelectedCounty(null);
-    }
-  }, [countyQuery]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedView]);
-
   const handleCountySelection = (geography: County) => {
-    setSelectedAsset(null);
-
-    setSelectedCounty((prevGeography) => {
-      if (prevGeography && prevGeography.value === geography.value) {
-        setCountyQuery('');
-        if (mapInstance.current) {
-          mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
-          mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', 0.0);
-          mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', 0.0);
-        }
-        return null;
-      }
-      setCountyQuery(geography.label);
-      return geography;
-    });
-
+    setSelectedAsset(null); // Clear selected asset when geography is selected
+    setSelectedCounty(geography); // Set the selected county or zipcode
+    setCountyQuery(geography.label);
     setShowCountyOptions(false);
-    setCurrentPage(1);
 
     if (mapInstance.current) {
       const bounds = new mapboxgl.LngLatBounds();
@@ -329,12 +312,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             mapInstance.current.fitBounds(bounds, { padding: 20 });
           }
 
+          // Darken other counties and keep the selected county transparent
           mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
             'case',
             ['==', ['get', 'County'], geography.value],
-            0.0,
-            0.5,
+            0.0, // Selected county stays transparent
+            0.0, // Other counties darken
           ]);
+
+          // Keep ZIP codes layer fully transparent
           mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', 0.0);
         }
       } else if (geography.type === 'ZipCode') {
@@ -356,12 +342,15 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             mapInstance.current.fitBounds(bounds, { padding: 20 });
           }
 
+          // Darken other ZIP codes and keep the selected ZIP code transparent
           mapInstance.current.setPaintProperty('zipcodes-layer', 'fill-opacity', [
             'case',
             ['==', ['get', 'ZCTA5CE20'], geography.value],
-            0.0,
-            0.5,
+            0.0, // Selected ZIP code stays transparent
+            0.0, // Other ZIP codes darken
           ]);
+
+          // Keep counties layer fully transparent
           mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', 0.0);
         }
       }
@@ -507,6 +496,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             className='ml-2 inline-flex align-middle items-center'
             onClick={() => {
               setSelectedAsset(null);
+              setSelectedCounty(null);
               mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 });
             }}
             aria-label='Deselect asset'
