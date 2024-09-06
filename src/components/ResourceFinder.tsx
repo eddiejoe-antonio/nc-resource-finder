@@ -183,7 +183,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
                   ],
                 },
                 'circle-color': '#BC2442',
-                'circle-opacity': 0.9,
+                'circle-opacity': 0.85,
                 'circle-stroke-color': 'white',
                 'circle-stroke-width': 1,
                 'circle-stroke-opacity': 1,
@@ -462,7 +462,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             className='ml-2 inline-flex align-middle items-center'
             onClick={() => {
               setSelectedAsset(null); // Deselect asset
-              mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 }); // Reset map
+              clearCountyQuery(); // Clear the county input when an asset is deselected
+              mapInstance.current!.fitBounds(northCarolinaBounds, { padding: 20 }); // Reset map view
             }}
             aria-label='Deselect asset'
           >
