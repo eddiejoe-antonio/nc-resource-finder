@@ -285,7 +285,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     }
   }, [selectedCounty]);
 
-  // Handle county selection (geography)
   const handleCountySelection = (geography: County) => {
     setSelectedAsset(null);
     setSelectedCounty(geography);
@@ -293,9 +292,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     setShowCountyOptions(false);
     setCurrentPage(1); // Reset to page 1 when geography changes
 
-    // Map fitting logic remains unchanged
     if (mapInstance.current) {
       const bounds = new mapboxgl.LngLatBounds();
+
       if (geography.type === 'County') {
         const features = mapInstance.current.querySourceFeatures('counties', {
           sourceLayer: 'ncgeo',
@@ -304,7 +303,27 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
         if (features.length > 0) {
           features.forEach((feature) => {
-            if (feature.geometry.type === 'Polygon') {
+            if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+              (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
+                bounds.extend(coord);
+              });
+            }
+          });
+
+          if (!bounds.isEmpty()) {
+            mapInstance.current.fitBounds(bounds, { padding: 20 });
+          }
+        }
+      } else if (geography.type === 'ZipCode') {
+        // Make sure the correct property is used for filtering
+        const features = mapInstance.current.querySourceFeatures('zipcodes', {
+          sourceLayer: 'NC_Zipcodes',
+          filter: ['==', 'ZCTA5CE20', geography.value], // Ensure 'ZCTA5CE10' is the correct property
+        });
+
+        if (features.length > 0) {
+          features.forEach((feature) => {
+            if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
               (feature.geometry.coordinates[0] as mapboxgl.LngLatLike[]).forEach((coord) => {
                 bounds.extend(coord);
               });
@@ -783,15 +802,24 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-6 md:py-0 md:p-4 w-full'
             style={{ flex: 1, overflowY: 'auto' }}
           >
-            <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
+            {/* ViewToggle Section */}
+            <div className='flex justify-between items-center my-[2px]'>
+              <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
+            </div>
+
+            {/* Summary Text */}
             <div className='py-3'>
               <p className='my-2 md:my-4 text-lg'>{getSummaryText()}</p>
             </div>
+
+            {/* Asset List Section */}
             <div className='space-y-4'>
               {paginatedResources.map((resource, index) => (
                 <AssetListItem key={index} resource={resource} />
               ))}
             </div>
+
+            {/* Pagination */}
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
