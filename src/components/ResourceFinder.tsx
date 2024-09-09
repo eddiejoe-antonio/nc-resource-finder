@@ -195,6 +195,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               closeButton: false,
               closeOnClick: false,
             });
+            // Make sure the points layer is always on top
+            mapInstance.current.moveLayer('geojson-layer');
 
             mapInstance.current.on('mousemove', 'geojson-layer', (e) => {
               const coordinates = e.lngLat;
