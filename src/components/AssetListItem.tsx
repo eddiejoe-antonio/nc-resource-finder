@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPinIcon, BookmarkIcon, LinkIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, BookmarkIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { AssetListItemProps } from '../types/resourceFinderTypes';
 
 const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
@@ -12,7 +12,6 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
       return type;
     }
   };
-
   const formatWebsite = (url: string | undefined | null) => {
     if (!url) {
       return '';
@@ -31,7 +30,14 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
       <div className=''>
         <div className='flex items-center text-sm py-2 text-[#0E3052]'>
           <MapPinIcon className='h-6 w-6 mr-2 flex-shrink-0 [stroke-width:2]' />
-          <div className='overflow-x-auto flex-grow min-w-0'>{resource.properties.geography}</div>
+          <a
+            href={resource.properties.googlemaps_link}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300 flex-grow min-w-0 whitespace-normal break-words'
+          >
+            {resource.properties.address_geocode}
+          </a>{' '}
         </div>
       </div>
       <div className=''>
@@ -72,18 +78,25 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
               <p className='whitespace-normal break-words'>{resource.properties.description}</p>
             </div>
             <div className='my-4'>
-              <p className='my-2 font-semibold'>Address</p>
-              <div className='flex items-center'>
-                <a
-                  href={resource.properties.googlemaps_link}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300 flex-grow min-w-0 whitespace-normal break-words'
-                >
-                  {resource.properties.address_geocode}
-                </a>
-                <ArrowRightIcon className='h-6 w-6 mr-2 flex-shrink-0 [stroke-width:2]' />
-              </div>
+              <p className='my-2 font-semibold'>Contact Information</p>
+              <p className='whitespace-normal break-words'>{resource.properties.contact_name}</p>
+
+              {resource.properties.contact_email && (
+                <p className='whitespace-normal break-words'>
+                  <a
+                    href={`mailto:${resource.properties.contact_email}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300 flex-grow min-w-0 whitespace-normal break-words'
+                  >
+                    {resource.properties.contact_email}
+                  </a>
+                </p>
+              )}
+
+              {resource.properties.contact_phone && (
+                <p className='whitespace-normal break-words'>{resource.properties.contact_phone}</p>
+              )}
             </div>
           </div>
         )}

@@ -19,6 +19,9 @@ export interface Resource {
   lat: number;
   address_geocode?: string;
   googlemaps_link?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
 }
 
 export interface AssetListItemProps {
@@ -33,6 +36,9 @@ export interface AssetListItemProps {
       description?: string;
       address_geocode?: string;
       googlemaps_link?: string;
+      contact_name?: string;
+      contact_email?: string;
+      contact_phone?: string;
     }
   >;
 }

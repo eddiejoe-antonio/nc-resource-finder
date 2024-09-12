@@ -524,6 +524,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         description: resource.properties?.description,
         address_geocode: resource.properties?.address_geocode,
         googlemaps_link: resource.properties?.googlemaps_link,
+        contact_name: resource.properties?.contact_name,
+        contact_email: resource.properties?.contact_email,
+        contact_phone: resource.properties?.contact_phone,
       };
 
       return {
@@ -561,6 +564,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           description: string | undefined;
           address_geocode: string | undefined;
           googlemaps_link: string | undefined;
+          contact_name: string | undefined;
+          contact_email: string | undefined;
+          contact_phone: string | undefined;
         }
       > = {
         type: 'FeatureCollection',
@@ -590,6 +596,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       description?: string;
       address_geocode?: string;
       googlemaps_link?: string;
+      contact_name?: string;
+      contact_email?: string;
+      contact_phone?: string;
     }
   > => feature.geometry.type === 'Point';
 

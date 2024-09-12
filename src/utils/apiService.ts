@@ -14,6 +14,9 @@ export const fetchGeoResources = async (): Promise<
       description?: string;
       address_geocode?: string;
       googlemaps_link?: string;
+      contact_name?: string;
+      contact_email?: string;
+      contact_phone?: string;
     }
   >
 > => {
@@ -55,6 +58,9 @@ export const fetchGeoResources = async (): Promise<
       description?: string;
       address_geocode?: string;
       googlemaps_link?: string;
+      contact_name?: string;
+      contact_email?: string;
+      contact_phone?: string;
     }
   > = {
     type: 'FeatureCollection',
@@ -75,6 +81,9 @@ export const fetchGeoResources = async (): Promise<
           description: resource.description,
           address_geocode: resource.address_geocode,
           googlemaps_link: resource.googlemaps_link,
+          contact_name: resource.contact_name,
+          contact_email: resource.contact_email,
+          contact_phone: resource.contact_phone,
         },
       })),
   };
