@@ -581,6 +581,22 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       mapInstance.current.moveLayer('geojson-layer');
     }
   }, [filteredAndMappedResources, selectedAsset]);
+  const zoomToAsset = (resource: GeoJSON.Feature<GeoJSON.Point, GeoJSON.GeoJsonProperties>) => {
+    const geometry = resource.geometry;
+
+    if (geometry.type === 'Point') {
+      const coordinates = geometry.coordinates as [number, number];
+
+      // Fly to the asset on the map
+      mapInstance.current!.flyTo({
+        center: coordinates,
+        zoom: 14,
+      });
+
+      // Set the asset as selected
+      setSelectedAsset(resource);
+    }
+  };
 
   // Helper function to narrow down the type
   const isPointFeature = (
@@ -814,7 +830,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             {/* Asset List Section */}
             <div className='space-y-4'>
               {paginatedResources.map((resource, index) => (
-                <AssetListItem key={index} resource={resource} />
+                <AssetListItem key={index} resource={resource} zoomToAsset={zoomToAsset} />
               ))}
             </div>
 

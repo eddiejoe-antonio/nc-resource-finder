@@ -41,4 +41,5 @@ export interface AssetListItemProps {
       contact_phone?: string;
     }
   >;
+  zoomToAsset?: (resource: GeoJSON.Feature<GeoJSON.Point, GeoJSON.GeoJsonProperties>) => void;
 }

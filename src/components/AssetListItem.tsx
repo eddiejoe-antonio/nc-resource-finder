@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MapPinIcon, BookmarkIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { AssetListItemProps } from '../types/resourceFinderTypes';
 
-const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
+const AssetListItem: React.FC<AssetListItemProps> = ({ resource, zoomToAsset }) => {
   const [showMore, setShowMore] = useState(false);
 
   const formatType = (type: string | string[]) => {
@@ -12,6 +12,7 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
       return type;
     }
   };
+
   const formatWebsite = (url: string | undefined | null) => {
     if (!url) {
       return '';
@@ -25,7 +26,17 @@ const AssetListItem: React.FC<AssetListItemProps> = ({ resource }) => {
   return (
     <div className='flex flex-col border-b border-[#3B75A9] transition-all ease-in-out duration-300'>
       <div className='text-black py-2'>
-        <h2 className='mt-1 font-bold text-md'>{resource.properties.name}</h2>
+        {/* Make the title clickable and trigger zoomToAsset */}
+        <h2
+          className='mt-1 font-bold text-md cursor-pointer hover:text-[#1E79C8] transition-colors ease-in-out'
+          onClick={() => {
+            if (zoomToAsset) {
+              zoomToAsset(resource); // Only invoke if zoomToAsset is provided
+            }
+          }}
+        >
+          {resource.properties.name}
+        </h2>
       </div>
       <div className=''>
         <div className='flex items-center text-sm py-2 text-[#0E3052]'>
