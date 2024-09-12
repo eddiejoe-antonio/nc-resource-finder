@@ -59,6 +59,20 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const navigate = useNavigate();
   const handleNavigate = (view: string) => {
     setSelectedView(view);
+
+    // Reset filters when toggling views
+    setSelectedType([]); // Clear type filter
+    setSelectedCounty(null); // Clear selected county
+    setCountyQuery(''); // Clear the geography dropdown query
+    setSearchQuery(''); // Clear search query
+    setCurrentPage(1); // Reset pagination
+    setSelectedAsset(null); // Deselect any selected asset
+
+    // If toggling to map view, zoom out to North Carolina bounds
+    if (view === 'map' && mapInstance.current) {
+      mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
+    }
+
     navigate('/');
   };
 
