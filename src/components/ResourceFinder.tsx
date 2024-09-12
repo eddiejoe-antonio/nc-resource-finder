@@ -51,7 +51,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const mapInstance = useRef<mapboxgl.Map | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null); // Create a ref for search input
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const assetSectionRef = useRef<HTMLDivElement>(null);
   const srCountyRef = useRef<HTMLDivElement>(null);
@@ -145,7 +145,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             source: 'counties',
             'source-layer': 'ncgeo',
             paint: {
-              'fill-color': '#acacac',
+              'fill-color': 'transparent',
               'fill-opacity': 0.0,
               'fill-outline-color': 'white',
             },
@@ -157,7 +157,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             source: 'zipcodes',
             'source-layer': 'NC_Zipcodes',
             paint: {
-              'fill-color': '#acacac',
+              'fill-color': 'transparent',
               'fill-opacity': 0.0,
               'fill-outline-color': 'white',
             },
@@ -254,13 +254,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   // Handle county selection logic
   useEffect(() => {
     if (mapInstance.current && mapInstance.current.isStyleLoaded()) {
-      mapInstance.current.setPaintProperty('counties-layer', 'fill-opacity', [
-        'case',
-        ['==', ['get', 'County'], selectedCounty ? selectedCounty.value : ''],
-        0,
-        0.0,
-      ]);
-
       if (selectedCounty) {
         const bounds = new mapboxgl.LngLatBounds();
         const features = mapInstance.current.querySourceFeatures('counties', {
@@ -317,10 +310,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           }
         }
       } else if (geography.type === 'ZipCode') {
-        // Make sure the correct property is used for filtering
         const features = mapInstance.current.querySourceFeatures('zipcodes', {
           sourceLayer: 'NC_Zipcodes',
-          filter: ['==', 'ZCTA5CE20', geography.value], // Ensure 'ZCTA5CE10' is the correct property
+          filter: ['==', 'ZCTA5CE20', geography.value],
         });
 
         if (features.length > 0) {
@@ -337,6 +329,9 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           }
         }
       }
+
+      // Ensure the geojson-layer remains on top
+      mapInstance.current.moveLayer('geojson-layer');
     }
   };
 
@@ -447,13 +442,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     }
   };
 
-  useEffect(() => {
-    if (currentCountyIndex >= 0 && mapInstance.current) {
-      const selectedCounty = countyList[currentCountyIndex];
-      mapInstance.current.setFilter('counties-layer-hover', ['==', 'County', selectedCounty.value]);
-    }
-  }, [countyList, currentCountyIndex]);
-
   const scrollToTop = () => {
     if (assetSectionRef.current) {
       assetSectionRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -462,7 +450,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
   const handlePageChange = (page: number) => {
     if (!selectedAsset) {
-      // Only allow changing pages if an asset is not selected
       setCurrentPage(page);
       scrollToTop();
     }
@@ -584,6 +571,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       if (geojsonSource) {
         geojsonSource.setData(filteredGeoJson);
       }
+      // Ensure the geojson-layer remains on top after data is updated
+      mapInstance.current.moveLayer('geojson-layer');
     }
   }, [filteredAndMappedResources, selectedAsset]);
 
@@ -636,7 +625,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   return (
     <div className='w-full py-4'>
       <div className='flex flex-col border-t border-[#3B75A9] lg:flex-row lg:items-start lg:space-x-16 py-4'>
-        {/* Search Input */}
         <div className='relative flex-1 lg:w-1/2 md:mb-0 mb-2'>
           <p className='my-2 font-semibold text-lg'>What are you looking for?</p>
           <label htmlFor='keyword-input' className='sr-only'>
@@ -653,7 +641,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               className='w-full bg-white border border-[#3B75A9] rounded-full pl-10 pr-10 py-2 text-left cursor-default text-black'
               value={searchQuery}
               onChange={handleSearchChange}
-              ref={searchInputRef} // Attach the ref here
+              ref={searchInputRef}
             />
             {/* Clear Icon for Search */}
             {searchQuery && (
@@ -698,7 +686,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             {countyQuery && (
               <button
                 className='absolute inset-y-0 right-2 flex items-center cursor-pointer'
-                onClick={() => clearCountyQuery(false)} // Wrap the function in an arrow function
+                onClick={() => clearCountyQuery(false)}
                 onKeyDown={(e) => e.key === 'Enter' && clearCountyQuery()}
                 tabIndex={0}
                 aria-label='Clear county input'
@@ -801,8 +789,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           <div ref={srCountyRef} className='sr-only' aria-live='assertive'></div>
           <div
             ref={assetSectionRef}
-            className='md:flex-grow-0 md:flex-shrink-0 h-[40vh] md:h-[60vh] lg:h-[80vh] py-6 md:py-0 md:p-4 w-full'
-            style={{ flex: 1, overflowY: 'auto' }}
+            className='h-[40vh] md:h-[60vh] lg:h-[80vh] py-6 md:py-0 md:p-4 w-full md:overflow-y-auto'
+            style={{ flex: 1 }}
           >
             {/* ViewToggle Section */}
             <div className='flex justify-between items-center my-[2px]'>
