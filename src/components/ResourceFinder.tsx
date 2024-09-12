@@ -369,11 +369,17 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     scrollToTop();
   };
   const handleCountyQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCountyQuery(e.target.value);
-    setShowCountyOptions(true);
-    setHighlightedCountyIndex(-1);
-    setCurrentPage(1);
-    scrollToTop();
+    const newQuery = e.target.value;
+
+    // Check if the new value is shorter than the previous one, indicating a deletion
+    if (newQuery.length < countyQuery.length) {
+      clearCountyQuery(); // Clear the entire input and deselect geography
+    } else {
+      setCountyQuery(newQuery);
+      setShowCountyOptions(true);
+      setHighlightedCountyIndex(-1);
+    }
+    setCurrentPage(1); // Reset pagination when query changes
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -653,11 +659,12 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const clearCountyQuery = (focusInput = false) => {
     setCountyQuery(''); // Clear the county query
     setSelectedCounty(null); // Clear the selected county
+    setSelectedAsset(null); // Deselect the asset when the county is cleared
     if (focusInput && countyInputRef.current) {
       countyInputRef.current.focus(); // Focus the county input if specified
     }
     if (mapInstance.current) {
-      mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
+      mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 }); // Reset map view to North Carolina
     }
   };
 
@@ -721,6 +728,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               onKeyDown={handleKeyDown}
               ref={countyInputRef}
             />
+
             {/* Clear Icon for County */}
             {countyQuery && (
               <button
