@@ -209,8 +209,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
               closeButton: false,
               closeOnClick: false,
             });
-            // Make sure the points layer is always on top
-            mapInstance.current.moveLayer('geojson-layer');
 
             mapInstance.current.on('mousemove', 'geojson-layer', (e) => {
               const coordinates = e.lngLat;
@@ -343,9 +341,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           }
         }
       }
-
-      // Ensure the geojson-layer remains on top
-      mapInstance.current.moveLayer('geojson-layer');
     }
   };
 
@@ -597,8 +592,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
       if (geojsonSource) {
         geojsonSource.setData(filteredGeoJson);
       }
-      // Ensure the geojson-layer remains on top after data is updated
-      mapInstance.current.moveLayer('geojson-layer');
     }
   }, [filteredAndMappedResources, selectedAsset]);
   const zoomToAsset = (resource: GeoJSON.Feature<GeoJSON.Point, GeoJSON.GeoJsonProperties>) => {
