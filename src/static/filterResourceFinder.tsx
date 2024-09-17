@@ -35,8 +35,8 @@ export const typeFilterData: FilterData = {
       icon: DeviceTabletIcon,
     },
     {
-      value: 'Find a public computer',
-      label: 'Find a public computer',
+      value: 'Find a public computer or Wi-Fi',
+      label: 'Find a public computer or Wi-Fi',
       checked: false,
       type: 'Primary_Filter',
       icon: WifiIcon,
