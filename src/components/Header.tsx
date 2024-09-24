@@ -41,12 +41,14 @@ const Header: React.FC<HeaderProps> = ({ setIsModalOpen }) => {
     <div className='w-full'>
       <div className='block md:flex items-center justify-between'>
         <div className='mt-16 md:mb-12 col-start-1 col-span-8 gap-0 text-left'>
-          <h1 className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-semibold font-['Source Sans Pro']">
-            Find Technology Resources{` `}
-          </h1>
-          <h1 className="block md:inline text-[#3B75A9] text-[1.5rem] md:text-[2rem] font-light font-['Source Sans Pro']">
-            In North Carolina
-          </h1>
+          <a href='/'>
+            <h1 className="block md:inline text-[#092940] text-[1.5rem] md:text-[2rem] font-semibold font-['Source Sans Pro']">
+              Find Technology Resources{` `}
+            </h1>
+            <h1 className="block md:inline text-[#3B75A9] text-[1.5rem] md:text-[2rem] font-light font-['Source Sans Pro']">
+              In North Carolina
+            </h1>
+          </a>
         </div>
         <div className='flex justify-start items-center col-start-10 col-span-2 my-4 md:my-0 md:mt-3'>
           <button
@@ -69,8 +71,8 @@ const Header: React.FC<HeaderProps> = ({ setIsModalOpen }) => {
       <div className='w-full'>
         <div className='pb-2'>
           <p className='text-lg'>
-            Use this tool to find resources like public Wi-Fi sites, technical assistance and
-            digital classes across the state of North Carolina.
+            Use this tool to find resources like help with using the internet, finding public
+            computers and Wi-Fi, and digital classes across North Carolina.
           </p>
         </div>
       </div>
