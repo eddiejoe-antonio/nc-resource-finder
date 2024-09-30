@@ -767,7 +767,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
         </div>
       </div>
       <div className='border-b border-[#3B75A9] pt-2 pb-6 justify-start'>
-        <div className='pb-2'>
+        <div className=''>
           <p>Try searching for popular resources</p>
         </div>
         <div>
