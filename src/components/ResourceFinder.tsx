@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CheckIcon, MapIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import AssetListItem from './AssetListItem';
 import ViewToggle from './ViewToggle';
@@ -56,8 +55,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const assetSectionRef = useRef<HTMLDivElement>(null);
   const srCountyRef = useRef<HTMLDivElement>(null);
   const [selectedView, setSelectedView] = useState('map');
-  const navigate = useNavigate();
-  const handleNavigate = (view: string) => {
+  const handleViewToggle = (view: string) => {
     setSelectedView(view);
 
     // Reset filters when toggling views
@@ -72,8 +70,6 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
     if (view === 'map' && mapInstance.current) {
       mapInstance.current.fitBounds(northCarolinaBounds, { padding: 20 });
     }
-
-    navigate('/');
   };
 
   const filteredCounties = geographyFilterData.options.filter((option) =>
@@ -801,7 +797,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
             <div>
               <p className='my-6 md:my-0 text-lg'>{getSummaryText()}</p>
             </div>
-            <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
+            <ViewToggle selectedView={selectedView} handleNavigate={handleViewToggle} />
           </div>
 
           <div className='mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 space-y-0'>
@@ -834,7 +830,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
           >
             {/* ViewToggle Section */}
             <div className='flex justify-between items-center my-[2px]'>
-              <ViewToggle selectedView={selectedView} handleNavigate={handleNavigate} />
+              <ViewToggle selectedView={selectedView} handleNavigate={handleViewToggle} />
             </div>
 
             {/* Summary Text */}
