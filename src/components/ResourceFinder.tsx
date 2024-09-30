@@ -214,7 +214,7 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
                 tooltip
                   .setLngLat(coordinates)
                   .setHTML(
-                    `<h3><strong>${feature.properties.name}</strong></h3><p>${feature.properties.address_geocode}</p>`,
+                    `<p><strong>${feature.properties.name}</strong></p><p>${feature.properties.address_geocode}</p>`,
                   )
                   .addTo(mapInstance.current!);
               }
