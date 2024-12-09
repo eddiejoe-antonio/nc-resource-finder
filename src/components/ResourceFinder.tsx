@@ -28,6 +28,24 @@ interface ResourceFinderProps {
   isModalOpen: boolean;
 }
 
+const fetchSynonyms = async (term: string): Promise<string[]> => {
+  try {
+    const response = await fetch(`https://api.datamuse.com/words?rel_syn=${term}`);
+    const data = await response.json();
+    return data.map((entry: { word: string }) => entry.word); // Extract synonyms
+  } catch (error) {
+    console.error(`Error fetching synonyms for "${term}":`, error);
+    return [];
+  }
+};
+
+const enhanceQueryWithSynonyms = async (query: string): Promise<string[]> => {
+  const terms = query.toLowerCase().split(/\s+/); // Split query into words
+  const synonymArrays = await Promise.all(terms.map(fetchSynonyms)); // Fetch synonyms for each term
+  return Array.from(new Set([...terms, ...synonymArrays.flat()])); // Merge and deduplicate terms
+};
+
+
 const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const [geoResource, setGeoResource] = useState<GeoJsonFeatureCollection>({
     type: 'FeatureCollection',
@@ -51,6 +69,8 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const countyInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [enhancedResults, setEnhancedResults] = useState<GeoJSON.Feature[]>([]);
+
 
   const assetSectionRef = useRef<HTMLDivElement>(null);
   const srCountyRef = useRef<HTMLDivElement>(null);
@@ -354,11 +374,12 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
   // Handle search input changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setSelectedAsset(null);
-    setCurrentPage(1); // Reset to page 1 on search change
-    scrollToTop();
+    setSearchQuery(e.target.value); // Update the search query
+    setSelectedAsset(null); // Deselect any selected asset
+    setCurrentPage(1); // Reset pagination to page 1
+    scrollToTop(); // Scroll to the top
   };
+  
   const handleCountyQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
 
@@ -519,9 +540,29 @@ const ResourceFinder: React.FC<ResourceFinderProps> = ({ isModalOpen }) => {
 
   const fuse = new Fuse(geoResource.features, fuseOptions);
 
-  const searchFilteredResources = searchQuery
-    ? fuse.search(searchQuery).map((result) => result.item)
-    : geoResource.features;
+  useEffect(() => {
+    const performSearch = async () => {
+      if (searchQuery) {
+        // Fetch enhanced query terms with synonyms
+        const enhancedQuery = await enhanceQueryWithSynonyms(searchQuery);
+  
+        // Search for all terms and their synonyms using Fuse.js
+        const results = enhancedQuery.flatMap((term) =>
+          fuse.search(term).map((result) => result.item)
+        );
+  
+        // Deduplicate results
+        setEnhancedResults(Array.from(new Set(results)));
+      } else {
+        setEnhancedResults(geoResource.features); // Default to all resources if no query
+      }
+    };
+  
+    performSearch();
+  }, [searchQuery, geoResource]);
+  
+  const searchFilteredResources = enhancedResults;
+  
 
   const filteredAndMappedResources = searchFilteredResources
     .filter((resource) => resource.geometry.type === 'Point')
