@@ -57,6 +57,10 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
     window.open('https://ncsu.qualtrics.com/jfe/form/SV_cHfEQwInm8UprWC', '_blank');
   };
 
+  const handleUpdateClick = () => {
+    window.open('https://ncsu.qualtrics.com/jfe/form/SV_3VDVy99YrianIi2', '_blank');
+  };
+
   return (
     <div className='fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50'>
       <div
@@ -82,18 +86,16 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
                   How Did North Carolina Gather These Resources?
                 </h2>
                 <p>
-                  The North Carolina Office of Digital Equity & Literacy (ODEL) gathered the
-                  resources in this site as part of the process to develop North Carolina’s{' '}
+                We gathered the resources in this site as part of the process to develop North Carolina’s{' '}
                   <a
                     href='https://www.ncbroadband.gov/Digital-Equity-Plan'
                     target='_blank'
                     rel='noopener noreferrer'
                     className=' text-[#092940] underline md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
                   >
-                    State Digital Equity Plan
+                    State Digital Equity Plan.
                   </a>{' '}
-                  in 2023. Community members, digital navigators, academic partners, state agencies,
-                  and everyday North Carolinians contributed to the dataset.
+                  Community members, digital navigators, academic partners, state agencies and North Carolinians contributed to the dataset.
                 </p>
               </section>
               <section>
@@ -101,49 +103,46 @@ const AboutModal: React.FC<AboutModalProps> = ({ onClose }) => {
                   How Can I Add Or Update Information On A Resource?
                 </h2>
                 <p className='pb-2'>
-                  The State is committed to keeping information on digital equity resources correct
-                  and current. Please click on the form below to submit a correction or update to
-                  any information you see on this site. ODEL and its partners will review
-                  submissions for accuracy and duplications before integrating them into the site.
-                </p>
-                <button
-                  className=' flex bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1] md:hover:text-white py-2 px-4 rounded-full mt-4'
-                  onClick={handleContributeClick}
-                >
-                  <PlusCircleIcon className='w-6 h-6 mr-2' />
-                  <span className='whitespace-nowrap'>Add a resource</span>
+                We are committed to keeping information on resources updated. Please click on the form below to submit a correction or update information on this site. We will review submissions for accuracy and duplications before integrating them into the site.                </p>
+                <div className='grid md:flex justify-between'>
+                  <button
+                    className=' flex bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1] md:hover:text-white py-2 px-4 rounded-full mt-4'
+                    onClick={handleContributeClick}
+                  >
+                    <PlusCircleIcon className='w-6 h-6 mr-2' />
+                    <span className='whitespace-nowrap'>Add a Resource</span>
+                  </button>
+                  <button
+                    className=' flex bg-[#EEF7FF] text-[#092940] border border-[#3B75A9] md:hover:bg-[#3892E1] md:hover:text-white py-2 px-4 rounded-full mt-4'
+                    onClick={handleUpdateClick}
+                  >
+                    <PlusCircleIcon className='w-6 h-6 mr-2' />
+                    <span className='whitespace-nowrap'>Update a Resource</span>
                 </button>
+                </div>
               </section>
               <section className='mt-8 mb-4'>
                 <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940]  mb-4'>
-                  How Can I Use the App?
+                How Do I Use the Tech Resource Finder?
                 </h2>
                 <p>
-                  You can use the Tech Resource Finder to identify a digital equity resource in your
-                  community, where a loved one resides, or in a location you are visiting. You can
-                  use this tool to direct others to the resources that they need to thrive. You can
-                  help ODEL enrich this dataset and stay up to date on what is happening across the
-                  state.
-                </p>
+                Use the Tech Resource Finder to identify digital resources and support in your community, where a loved one resides, or in a location you are visiting. You can also use this tool to direct others to the resources and provide updates on resources in your areas.                </p>
               </section>
               <section className='mb-4'>
                 <h2 className='text-[1.125rem] md:text-[1.5rem] font-black text-[#092940]  mb-4'>
-                  I’m Having Trouble with the App. What Should I Do?
+                  I’m Having Trouble. What Should I Do?
                 </h2>
                 <p>
-                  If you are having trouble using the app, please review the training video
-                  available at this{' '}
+                  Pease review the{' '}
                   <a
                     href='https://nc-resource-finder.s3.amazonaws.com/trainingVideo.mp4'
                     target='_blank'
                     rel='noopener noreferrer'
                     className=' text-[#092940] underline md:hover:text-[#1E79C8] transition-colors ease-in-out duration-300'
                   >
-                    link.
+                    training video,
                   </a>{' '}
-                  Additionally, if you exit out of this pop-up window, you can access the training
-                  video on the bottom left hand of the screen by clicking on the button with a “?”
-                  icon in it.
+                  which can also be accessed by clicking the “?” icon on the bottom left side of the Tech Resource Finder.
                 </p>
               </section>
             </div>
